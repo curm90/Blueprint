@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import {
   Empty,
   EmptyContent,
@@ -21,9 +22,11 @@ export default function EmptyOutline() {
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button variant="outline" size="sm">
-          Add new Exercise
-        </Button>
+        <Link to="/add-exercise">
+          <Button variant="outline" size="sm">
+            Add new Exercise
+          </Button>
+        </Link>
       </EmptyContent>
     </Empty>
   )

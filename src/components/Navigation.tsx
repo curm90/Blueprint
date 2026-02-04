@@ -5,7 +5,9 @@ export default function Navigation() {
     <nav>
       <ul className="flex justify-between p-4 border-b">
         <div>
-          <li>Blueprint</li>
+          <Link to="/">
+            <li>Blueprint</li>
+          </Link>
         </div>
         <div className="flex gap-4 items-center">
           <Link to="/">
