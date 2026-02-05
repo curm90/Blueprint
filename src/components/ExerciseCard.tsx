@@ -1,17 +1,16 @@
-export default function ExerciseCard() {
-  const exercise = {
-    name: 'Bench Press',
-    targetWeight: 100,
-    unit: 'lbs',
-    targetReps: [8, 12],
-  }
+import { Button } from './ui/button'
+
+export default function ExerciseCard({ exercise }: any) {
+  console.log({ exercise })
+
   return (
-    <div className="border rounded-lg p-4">
-      <h3 className="font-bold">{exercise.name}</h3>
+    <div className="border rounded-lg p-4 w-full flex flex-col items-start">
+      <h3 className="font-bold text-lg">{exercise.name}</h3>
       <p>
         {exercise.targetWeight}
-        {exercise.unit} × {exercise.targetReps[0]}-{exercise.targetReps[1]} reps
+        {exercise.unit} × {exercise.minReps}-{exercise.maxReps} reps
       </p>
+      <Button className="mt-6">Log Today's Session</Button>
     </div>
   )
 }

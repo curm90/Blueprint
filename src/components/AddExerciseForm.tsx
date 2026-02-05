@@ -23,8 +23,22 @@ export default function AddExerciseForm() {
     },
     onSubmit: ({ value }) => {
       console.log(value)
-      // Show success message
-      alert('Exercise added successfully!')
+
+      // Get existing exercises from localStorage or initialize empty array
+      const existingExercises = JSON.parse(
+        localStorage.getItem('exercises') || '[]',
+      )
+
+      // Add new exercise to the array
+      const updatedExercises = [...existingExercises, value]
+
+      // Save updated array back to localStorage
+      localStorage.setItem('exercises', JSON.stringify(updatedExercises))
+
+      console.log('All exercises:', updatedExercises)
+
+      // Reset form after successful submission
+      form.reset()
     },
   })
   return (
