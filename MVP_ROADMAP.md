@@ -138,11 +138,11 @@ CREATE INDEX idx_workout_sessions_logged_at ON workout_sessions(logged_at);
 ## Implementation Phases
 
 ### Phase 1: Core UI & Local Storage (Week 1-2)
-- [ ] Exercise card components
-- [ ] Add exercise form
-- [ ] Session logging modal (already done)
-- [ ] Local storage persistence
-- [ ] Basic routing between pages
+- [x] Exercise card components
+- [x] Add exercise form
+- [x] Session logging modal (already done)
+- [x] Local storage persistence
+- [x] Basic routing between pages
 
 ### Phase 2: Database Integration (Week 3)
 - [ ] Supabase project setup
