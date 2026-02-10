@@ -2,6 +2,7 @@ import { useStore } from '@tanstack/react-form'
 
 import { useFieldContext, useFormContext } from '@/hooks/demo.form-context'
 
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea as ShadcnTextarea } from '@/components/ui/textarea'
@@ -82,7 +83,7 @@ export function TextArea({
 
   return (
     <div>
-      <Label htmlFor={label} className="mb-2 text-xl font-bold">
+      <Label htmlFor={label} className="mb-2 text-sm font-bold">
         {label}
       </Label>
       <ShadcnTextarea
@@ -170,6 +171,51 @@ export function Switch({ label }: { label: string }) {
         />
         <Label htmlFor={label}>{label}</Label>
       </div>
+      {field.state.meta.isTouched && <ErrorMessages errors={errors} />}
+    </div>
+  )
+}
+
+export function DifficultySelector({
+  options,
+}: {
+  options: Array<{
+    label: string
+    value: string
+    description: string
+    color: string
+    selectedBg: string
+  }>
+}) {
+  const field = useFieldContext<string>()
+  const errors = useStore(field.store, (state) => state.meta.errors)
+
+  return (
+    <div className="flex flex-col gap-3">
+      {options.map((option) => {
+        const isSelected = field.state.value === option.value
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => field.handleChange(option.value)}
+            className={cn(
+              'flex w-full items-stretch overflow-hidden rounded-lg border transition-all cursor-pointer',
+              isSelected
+                ? option.selectedBg
+                : 'border-border hover:bg-accent/50',
+            )}
+          >
+            <div className={cn('w-2 shrink-0', option.color)} />
+            <div className="flex flex-col items-start gap-0.5 px-4 py-3">
+              <span className="font-semibold text-sm">{option.label}</span>
+              <span className="text-muted-foreground text-xs">
+                {option.description}
+              </span>
+            </div>
+          </button>
+        )
+      })}
       {field.state.meta.isTouched && <ErrorMessages errors={errors} />}
     </div>
   )
