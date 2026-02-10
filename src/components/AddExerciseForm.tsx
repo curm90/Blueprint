@@ -1,4 +1,12 @@
 import z from 'zod'
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog'
 import { useAppForm } from '@/hooks/demo.form'
 
 const schema = z.object({
@@ -9,7 +17,19 @@ const schema = z.object({
   minReps: z.string().min(1, 'Minimum reps must be at least 1'),
 })
 
-export default function AddExerciseForm() {
+interface AddExerciseFormProps {
+  onSave?: () => void
+  asModal?: boolean
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+export default function AddExerciseForm({
+  onSave,
+  asModal = false,
+  open = false,
+  onOpenChange,
+}: AddExerciseFormProps) {
   const form = useAppForm({
     defaultValues: {
       name: '',
@@ -39,57 +59,92 @@ export default function AddExerciseForm() {
 
       // Reset form after successful submission
       form.reset()
+
+      // Call onSave callback and close modal if used as modal
+      onSave?.()
+      if (asModal) {
+        onOpenChange?.(false)
+      }
     },
   })
-  return (
-    <div className=" mx-auto mt-12 max-w-125">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          form.handleSubmit()
-        }}
-        className="border rounded-md p-12 flex flex-col gap-4"
-      >
-        <h1 className="text-2xl font-bold mb-4">Add Exercise</h1>
+
+  const FormContent = () => (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        form.handleSubmit()
+      }}
+      className={
+        asModal
+          ? 'flex flex-col gap-4'
+          : 'border rounded-md p-12 flex flex-col gap-4'
+      }
+    >
+      {!asModal && <h1 className="text-2xl font-bold mb-4">Add Exercise</h1>}
+
+      <form.AppField
+        name="name"
+        children={(field) => <field.TextField label="Exercise Name" />}
+      />
+
+      <div className="grid grid-cols-2 items-end gap-4">
         <form.AppField
-          name="name"
-          children={(field) => <field.TextField label="Exercise Name" />}
+          name="targetWeight"
+          children={(field) => <field.TextField label="Target weight" />}
         />
-        <div className="grid grid-cols-2 items-end gap-4">
-          <form.AppField
-            name="targetWeight"
-            children={(field) => <field.TextField label="Target weight" />}
-          />
-          <form.AppField
-            name="unit"
-            children={(field) => (
-              <field.Select
-                values={[
-                  { value: 'kg', label: 'kg' },
-                  { value: 'lbs', label: 'lbs' },
-                ]}
-                label="Unit"
-                placeholder="Please select a unit"
-              />
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4 items-end">
-          <form.AppField
-            name="minReps"
-            children={(field) => <field.TextField label="Minimum Reps" />}
-          />
-          <form.AppField
-            name="maxReps"
-            children={(field) => <field.TextField label="Maximum Reps" />}
-          />
-        </div>
-        <div className="flex justify-end mt-4">
-          <form.AppForm>
-            <form.SubscribeButton label="Save Exercise" />
-          </form.AppForm>
-        </div>
-      </form>
+        <form.AppField
+          name="unit"
+          children={(field) => (
+            <field.Select
+              values={[
+                { value: 'kg', label: 'kg' },
+                { value: 'lbs', label: 'lbs' },
+              ]}
+              label="Unit"
+              placeholder="Please select a unit"
+            />
+          )}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 items-end">
+        <form.AppField
+          name="minReps"
+          children={(field) => <field.TextField label="Minimum Reps" />}
+        />
+        <form.AppField
+          name="maxReps"
+          children={(field) => <field.TextField label="Maximum Reps" />}
+        />
+      </div>
+
+      <div className={`flex justify-end ${asModal ? '' : 'mt-4'}`}>
+        <form.AppForm>
+          <form.SubscribeButton label="Save Exercise" />
+        </form.AppForm>
+      </div>
+    </form>
+  )
+
+  if (asModal) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add New Exercise</DialogTitle>
+            <DialogDescription>
+              Add a new exercise to your workout routine.
+            </DialogDescription>
+          </DialogHeader>
+          <FormContent />
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  return (
+    <div className="mx-auto mt-12 max-w-125">
+      <FormContent />
     </div>
   )
 }
