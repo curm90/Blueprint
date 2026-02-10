@@ -1,4 +1,12 @@
 import z from 'zod'
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog'
 import { useAppForm } from '@/hooks/demo.form'
 
 const difficulties = ['easy', 'right', 'hard'] as const
@@ -36,15 +44,25 @@ const options = [
   },
 ]
 
-export default function ExerciseLog() {
-  const mockExercise = {
-    name: 'Chest fly',
-    minReps: 4,
-    maxReps: 10,
-    targetWeight: 55,
-    unit: 'kg',
-  }
+interface Exercise {
+  name: string
+  minReps: number
+  maxReps: number
+  targetWeight: number
+  unit: string
+}
 
+interface ExerciseLogProps {
+  exercise: Exercise
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export default function ExerciseLog({
+  exercise,
+  open,
+  onOpenChange,
+}: ExerciseLogProps) {
   const form = useAppForm({
     defaultValues: {
       difficulty: '',
@@ -55,41 +73,48 @@ export default function ExerciseLog() {
     },
     onSubmit: ({ value }) => {
       console.log('Form submitted with:', value)
+      onOpenChange(false)
     },
   })
 
   return (
-    <div className="border p-6 rounded-lg shadow-md flex flex-col gap-4 max-w-130 mx-auto">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          form.handleSubmit()
-        }}
-      >
-        <div className="flex flex-col gap-4">
-          <h1 className="font-bold text-lg">{mockExercise.name}</h1>
-          <p>
-            Target: {mockExercise.targetWeight}
-            {mockExercise.unit} × {mockExercise.minReps}-{mockExercise.maxReps}{' '}
-            reps
-          </p>
-          <p className="font-medium">How did it go?</p>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{exercise.name}</DialogTitle>
+          <DialogDescription>
+            Target: {exercise.targetWeight}
+            {exercise.unit} × {exercise.minReps}-{exercise.maxReps} reps
+          </DialogDescription>
+        </DialogHeader>
 
-          <form.AppField
-            name="difficulty"
-            children={(field) => <field.DifficultySelector options={options} />}
-          />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.handleSubmit()
+          }}
+        >
+          <div className="flex flex-col gap-4">
+            <p className="font-medium">How did it go?</p>
 
-          <form.AppField
-            name="notes"
-            children={(field) => <field.TextArea label="Notes (Optional)" />}
-          />
+            <form.AppField
+              name="difficulty"
+              children={(field) => (
+                <field.DifficultySelector options={options} />
+              )}
+            />
 
-          <form.AppForm>
-            <form.SubscribeButton label="Save Log" />
-          </form.AppForm>
-        </div>
-      </form>
-    </div>
+            <form.AppField
+              name="notes"
+              children={(field) => <field.TextArea label="Notes (Optional)" />}
+            />
+
+            <form.AppForm>
+              <form.SubscribeButton label="Save Log" />
+            </form.AppForm>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
