@@ -52,8 +52,8 @@ export default function Home({
           {/* Exercise Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {exercises.map((exercise: any, index: number) => (
-              <ExerciseCard 
-                key={exercise.id || index} 
+              <ExerciseCard
+                key={exercise.id || index}
                 exercise={exercise}
                 onEdit={handleEditExercise}
                 onDelete={handleDeleteExercise}
