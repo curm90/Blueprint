@@ -5,6 +5,7 @@ import AddExerciseForm from './AddExerciseForm'
 import EmptyOutline from './Empty'
 import ExerciseCard from './ExerciseCard'
 import { Button } from './ui/button'
+import { deleteExerciseServer } from '@/utils/exercises.server'
 
 export default function Home({
   exercises,
@@ -20,9 +21,15 @@ export default function Home({
     // TODO: Implement edit functionality
   }
 
-  const handleDeleteExercise = (exercise: any) => {
-    console.log('Delete exercise:', exercise)
-    // TODO: Implement delete functionality
+  const handleDeleteExercise = async (exercise: any) => {
+    try {
+      console.log('Delete exercise:', exercise)
+      await deleteExerciseServer({ data: { id: exercise.id } })
+      onRefresh?.() // This triggers the UI refresh!
+    } catch (error) {
+      console.error('Failed to delete exercise:', error)
+      // TODO: Show user-friendly error message
+    }
   }
 
   return (
