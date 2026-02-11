@@ -6,15 +6,14 @@ import EmptyOutline from './Empty'
 import ExerciseCard from './ExerciseCard'
 import { Button } from './ui/button'
 
-export default function Home() {
-  const [exercises, setExercises] = useState(() =>
-    JSON.parse(localStorage.getItem('exercises') || 'null'),
-  )
+export default function Home({
+  exercises,
+  onRefresh,
+}: {
+  exercises: any
+  onRefresh?: () => void
+}) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-
-  const refreshExercises = () => {
-    setExercises(JSON.parse(localStorage.getItem('exercises') || 'null'))
-  }
 
   return (
     <div className="mx-auto my-10 max-w-6xl px-6">
@@ -66,7 +65,10 @@ export default function Home() {
         asModal={true}
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
-        onSave={refreshExercises}
+        onSave={() => {
+          onRefresh?.() // Refresh exercises list
+          setIsAddModalOpen(false)
+        }}
       />
     </div>
   )
