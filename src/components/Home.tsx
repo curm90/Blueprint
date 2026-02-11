@@ -15,6 +15,16 @@ export default function Home({
 }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
+  const handleEditExercise = (exercise: any) => {
+    console.log('Edit exercise:', exercise)
+    // TODO: Implement edit functionality
+  }
+
+  const handleDeleteExercise = (exercise: any) => {
+    console.log('Delete exercise:', exercise)
+    // TODO: Implement delete functionality
+  }
+
   return (
     <div className="mx-auto my-10 max-w-6xl px-6">
       {exercises ? (
@@ -42,7 +52,12 @@ export default function Home({
           {/* Exercise Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {exercises.map((exercise: any, index: number) => (
-              <ExerciseCard key={index} exercise={exercise} />
+              <ExerciseCard 
+                key={exercise.id || index} 
+                exercise={exercise}
+                onEdit={handleEditExercise}
+                onDelete={handleDeleteExercise}
+              />
             ))}
           </div>
         </div>

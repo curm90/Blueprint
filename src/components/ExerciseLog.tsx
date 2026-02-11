@@ -48,7 +48,7 @@ interface Exercise {
   name: string
   minReps: number
   maxReps: number
-  targetWeight: number
+  currentWeight: number
   unit: string
 }
 
@@ -83,7 +83,7 @@ export default function ExerciseLog({
         <DialogHeader>
           <DialogTitle>{exercise.name}</DialogTitle>
           <DialogDescription>
-            Target: {exercise.targetWeight}
+            Target: {exercise.currentWeight}
             {exercise.unit} × {exercise.minReps}-{exercise.maxReps} reps
           </DialogDescription>
         </DialogHeader>
