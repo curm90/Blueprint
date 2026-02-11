@@ -8,10 +8,11 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import { useAppForm } from '@/hooks/demo.form'
+import { addExerciseServer } from '@/utils/exercises.server'
 
 const schema = z.object({
   name: z.string().min(1, 'Exercise name is required'),
-  targetWeight: z.string().min(1, 'Target weight must be at least 1'),
+  currentWeight: z.string().min(1, 'Current weight must be at least 1'),
   unit: z.string().min(1, 'Unit is required'),
   maxReps: z.string().min(1, 'Maximum reps must be at least 1'),
   minReps: z.string().min(1, 'Minimum reps must be at least 1'),
@@ -33,29 +34,37 @@ export default function AddExerciseForm({
   const form = useAppForm({
     defaultValues: {
       name: '',
-      targetWeight: '',
-      unit: '',
+      currentWeight: '',
+      unit: 'kg',
       minReps: '',
       maxReps: '',
     },
     validators: {
       onChange: schema,
     },
-    onSubmit: ({ value }) => {
-      console.log(value)
+    onSubmit: async ({ value }) => {
+      console.log('Form values:', value)
 
-      // Get existing exercises from localStorage or initialize empty array
-      const existingExercises = JSON.parse(
-        localStorage.getItem('exercises') || '[]',
-      )
+      // Convert string values to integers for database
+      const exerciseData = {
+        name: value.name,
+        currentWeight: parseInt(value.currentWeight, 10),
+        startingWeight: parseInt(value.currentWeight, 10), // Use current weight as starting weight
+        unit: value.unit,
+        minReps: parseInt(value.minReps, 10),
+        maxReps: parseInt(value.maxReps, 10),
+        // weightIncrement will use database default (2.5kg)
+      }
 
-      // Add new exercise to the array
-      const updatedExercises = [...existingExercises, value]
+      console.log('Processed exercise data:', exerciseData)
 
-      // Save updated array back to localStorage
-      localStorage.setItem('exercises', JSON.stringify(updatedExercises))
-
-      console.log('All exercises:', updatedExercises)
+      try {
+        await addExerciseServer({ data: exerciseData })
+        console.log('Exercise added successfully!')
+      } catch (error) {
+        console.error('Error adding exercise:', error)
+        return // Don't reset form if there's an error
+      }
 
       // Reset form after successful submission
       form.reset()
@@ -89,8 +98,8 @@ export default function AddExerciseForm({
 
       <div className="grid grid-cols-2 items-end gap-4">
         <form.AppField
-          name="targetWeight"
-          children={(field) => <field.TextField label="Target weight" />}
+          name="currentWeight"
+          children={(field) => <field.TextField label="Current weight" />}
         />
         <form.AppField
           name="unit"
