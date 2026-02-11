@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import ExerciseLog from './ExerciseLog'
+import DeleteAlertDialog from './DeleteAlertDialog'
 import type { Exercise } from '@/db/schema'
 
 export default function ExerciseCard({
@@ -20,6 +21,12 @@ export default function ExerciseCard({
   onDelete?: (exercise: Exercise) => void
 }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+
+  const handleDelete = () => {
+    onDelete?.(exercise)
+    setShowDeleteDialog(false)
+  }
 
   return (
     <div className="border border-border/50 rounded-lg p-6 bg-card shadow-sm hover:shadow-md transition-all duration-200 flex flex-col h-full">
@@ -49,7 +56,7 @@ export default function ExerciseCard({
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onDelete?.(exercise)}
+              onClick={() => setShowDeleteDialog(true)}
               className="cursor-pointer text-destructive focus:text-destructive"
             >
               <Trash2 className="h-4 w-4 mr-2" />
@@ -84,6 +91,12 @@ export default function ExerciseCard({
       </Button>
 
       <ExerciseLog exercise={exercise} open={isOpen} onOpenChange={setIsOpen} />
+      <DeleteAlertDialog
+        showDeleteDialog={showDeleteDialog}
+        setShowDeleteDialog={setShowDeleteDialog}
+        exercise={exercise}
+        handleDelete={handleDelete}
+      />
     </div>
   )
 }
