@@ -16,7 +16,9 @@ export const exercises = sqliteTable('exercises', {
   startingWeight: integer('starting_weight', { mode: 'number' }).notNull(),
   minReps: integer('min_reps', { mode: 'number' }).notNull(),
   maxReps: integer('max_reps', { mode: 'number' }).notNull(),
-  weightIncrement: integer('weight_increment', { mode: 'number' }).notNull(),
+  weightIncrement: integer('weight_increment', { mode: 'number' })
+    .default(2.5)
+    .notNull(), // Default 2.5kg increment
   unit: text().default('kg').notNull(),
 })
 
