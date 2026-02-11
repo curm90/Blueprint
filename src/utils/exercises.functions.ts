@@ -1,14 +1,8 @@
+import type { ExerciseCreate } from '@/db/schema'
 import { db } from '@/db'
 import { exercises } from '@/db/schema'
 
-export async function addExercise(exercise: {
-  name: string
-  currentWeight: number
-  startingWeight: number
-  unit: string
-  minReps: number
-  maxReps: number
-}) {
+export async function addExercise(exercise: ExerciseCreate) {
   try {
     const res = await db.insert(exercises).values(exercise)
 

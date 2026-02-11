@@ -1,5 +1,3 @@
-import z from 'zod'
-
 import {
   Dialog,
   DialogContent,
@@ -9,14 +7,10 @@ import {
 } from './ui/dialog'
 import { useAppForm } from '@/hooks/demo.form'
 import { addExerciseServer } from '@/utils/exercises.server'
+import { exerciseFormSchema } from '@/db/schema'
 
-const schema = z.object({
-  name: z.string().min(1, 'Exercise name is required'),
-  currentWeight: z.string().min(1, 'Current weight must be at least 1'),
-  unit: z.string().min(1, 'Unit is required'),
-  maxReps: z.string().min(1, 'Maximum reps must be at least 1'),
-  minReps: z.string().min(1, 'Minimum reps must be at least 1'),
-})
+// Use the schema from the database file
+const schema = exerciseFormSchema
 
 interface AddExerciseFormProps {
   onSave?: () => void
@@ -50,7 +44,7 @@ export default function AddExerciseForm({
         name: value.name,
         currentWeight: parseInt(value.currentWeight, 10),
         startingWeight: parseInt(value.currentWeight, 10), // Use current weight as starting weight
-        unit: value.unit,
+        unit: value.unit as 'kg' | 'lbs', // Type assertion for enum
         minReps: parseInt(value.minReps, 10),
         maxReps: parseInt(value.maxReps, 10),
         // weightIncrement will use database default (2.5kg)
