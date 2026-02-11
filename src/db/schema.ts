@@ -1,5 +1,7 @@
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { relations, sql } from 'drizzle-orm'
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
+import { z } from 'zod'
 
 export const exercises = sqliteTable('exercises', {
   id: integer({ mode: 'number' }).primaryKey({
@@ -48,3 +50,38 @@ export const sessionLogRelations = relations(sessionLog, ({ one }) => ({
     references: [exercises.id],
   }),
 }))
+
+// === TYPE EXPORTS ===
+
+// Drizzle inferred types
+export type Exercise = typeof exercises.$inferSelect
+export type ExerciseInsert = typeof exercises.$inferInsert
+export type SessionLog = typeof sessionLog.$inferSelect
+export type SessionLogInsert = typeof sessionLog.$inferInsert
+
+// Zod schemas for validation
+export const exerciseSelectSchema = createSelectSchema(exercises)
+export const exerciseInsertSchema = createInsertSchema(exercises)
+
+// Form-specific schemas (string inputs that need conversion)
+export const exerciseFormSchema = z.object({
+  name: z.string().min(1, 'Exercise name is required'),
+  currentWeight: z.string().min(1, 'Current weight must be at least 1'),
+  unit: z.enum(['kg', 'lbs']), // Required, no default for forms
+  minReps: z.string().min(1, 'Minimum reps must be at least 1'),
+  maxReps: z.string().min(1, 'Maximum reps must be at least 1'),
+})
+
+// API schema for server functions (parsed numbers)
+export const exerciseCreateSchema = z.object({
+  name: z.string().min(1),
+  currentWeight: z.number().positive(),
+  startingWeight: z.number().positive(),
+  unit: z.enum(['kg', 'lbs']),
+  minReps: z.number().int().positive(),
+  maxReps: z.number().int().positive(),
+})
+
+// Derived TypeScript types
+export type ExerciseForm = z.infer<typeof exerciseFormSchema>
+export type ExerciseCreate = z.infer<typeof exerciseCreateSchema>

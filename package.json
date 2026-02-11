@@ -37,6 +37,7 @@
     "clsx": "^2.1.1",
     "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.0",
+    "drizzle-zod": "^0.8.3",
     "lucide-react": "^0.561.0",
     "nitro": "npm:nitro-nightly@latest",
     "radix-ui": "^1.4.3",
