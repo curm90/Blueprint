@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import { addExercise } from './exercises.functions'
+import { addExercise, getExercises } from './exercises.functions'
 import type { ExerciseCreate } from '@/db/schema'
 import { exerciseCreateSchema } from '@/db/schema'
 
@@ -8,3 +8,9 @@ export const addExerciseServer = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     return await addExercise(data)
   })
+
+export const getExercisesServer = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    return await getExercises()
+  },
+)

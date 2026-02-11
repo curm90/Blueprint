@@ -14,3 +14,13 @@ export async function addExercise(exercise: ExerciseCreate) {
     throw new Error('Failed to add exercise to database')
   }
 }
+
+export async function getExercises() {
+  try {
+    const res = await db.select().from(exercises)
+    console.log('Exercises retrieved successfully:', { res })
+    return res
+  } catch (error) {
+    console.log({ error })
+  }
+}
