@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm'
 import type { ExerciseCreate } from '@/db/schema'
 import { db } from '@/db'
 import { exercises } from '@/db/schema'
@@ -19,6 +20,17 @@ export async function getExercises() {
   try {
     const res = await db.select().from(exercises)
     console.log('Exercises retrieved successfully:', { res })
+    return res
+  } catch (error) {
+    console.log({ error })
+  }
+}
+
+export async function deleteExercise(exerciseId: number) {
+  try {
+    const res = await db.delete(exercises).where(eq(exercises.id, exerciseId))
+    console.log({ res })
+
     return res
   } catch (error) {
     console.log({ error })

@@ -1,5 +1,10 @@
 import { createServerFn } from '@tanstack/react-start'
-import { addExercise, getExercises } from './exercises.functions'
+import z from 'zod'
+import {
+  addExercise,
+  deleteExercise,
+  getExercises,
+} from './exercises.functions'
 import type { ExerciseCreate } from '@/db/schema'
 import { exerciseCreateSchema } from '@/db/schema'
 
@@ -14,3 +19,9 @@ export const getExercisesServer = createServerFn({ method: 'GET' }).handler(
     return await getExercises()
   },
 )
+
+export const deleteExerciseServer = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ id: z.number() }))
+  .handler(({ data }) => {
+    return deleteExercise(data.id)
+  })
