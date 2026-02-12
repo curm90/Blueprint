@@ -166,7 +166,7 @@ CREATE INDEX idx_workout_sessions_logged_at ON workout_sessions(logged_at);
  
 ### Phase 5: Polish & UX (Week 6)
 - [ ] Loading states & skeletons
-- [ ] Error boundaries
+- [x] Error boundaries
 - [ ] Form validation improvements
 - [ ] Mobile responsiveness
 - [ ] Performance optimizations
