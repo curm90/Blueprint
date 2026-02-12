@@ -1,7 +1,7 @@
-import { eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import type { ExerciseCreate } from '@/db/schema'
 import { db } from '@/db'
-import { exercises } from '@/db/schema'
+import { exercises, sessionLog } from '@/db/schema'
 
 export async function addExercise(exercise: ExerciseCreate) {
   try {
@@ -26,6 +26,23 @@ export async function getExercises() {
   }
 }
 
+export async function getExercisesWithProgress() {
+  try {
+    const res = await db.query.exercises.findMany({
+      with: {
+        sessionLogs: {
+          orderBy: desc(sessionLog.loggedAt),
+        },
+      },
+    })
+    console.log('Exercises with progress retrieved successfully:', { res })
+    return res
+  } catch (error) {
+    console.log({ error })
+    throw error
+  }
+}
+
 export async function deleteExercise(exerciseId: number) {
   try {
     const res = await db.delete(exercises).where(eq(exercises.id, exerciseId))
@@ -39,17 +56,17 @@ export async function deleteExercise(exerciseId: number) {
 
 export async function updateExercise(
   exerciseId: number,
-  updatedData: Partial<ExerciseCreate>,
+  updates: Partial<ExerciseCreate>,
 ) {
   try {
     const res = await db
       .update(exercises)
-      .set(updatedData)
+      .set(updates)
       .where(eq(exercises.id, exerciseId))
-    console.log({ res })
-
+    console.log('Exercise updated successfully:', { res })
     return res
   } catch (error) {
     console.log({ error })
+    throw error
   }
 }

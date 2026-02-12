@@ -4,6 +4,7 @@ import {
   addExercise,
   deleteExercise,
   getExercises,
+  getExercisesWithProgress,
   updateExercise,
 } from './exercises.functions'
 import type { ExerciseCreate } from '@/db/schema'
@@ -20,6 +21,12 @@ export const getExercisesServer = createServerFn({ method: 'GET' }).handler(
     return await getExercises()
   },
 )
+
+export const getExercisesWithProgressServer = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  return await getExercisesWithProgress()
+})
 
 export const deleteExerciseServer = createServerFn({ method: 'POST' })
   .inputValidator(z.object({ id: z.number() }))
