@@ -31,8 +31,6 @@ export const sessionLog = sqliteTable('session_log', {
   exerciseId: integer('exercise_id', { mode: 'number' })
     .notNull()
     .references(() => exercises.id),
-  performedReps: integer('performed_reps', { mode: 'number' }).notNull(),
-  weightUsed: integer('weight_used', { mode: 'number' }).notNull(),
   difficulty: text().notNull(),
   notes: text(),
   loggedAt: integer('logged_at', { mode: 'timestamp' }).default(
@@ -63,6 +61,15 @@ export type SessionLogInsert = typeof sessionLog.$inferInsert
 export const exerciseSelectSchema = createSelectSchema(exercises)
 export const exerciseInsertSchema = createInsertSchema(exercises)
 
+// Session log schemas with proper enum constraint for difficulty
+export const sessionLogSelectSchema = createSelectSchema(sessionLog, {
+  difficulty: z.enum(['easy', 'right', 'hard']),
+})
+
+export const sessionLogInsertSchema = createInsertSchema(sessionLog, {
+  difficulty: z.enum(['easy', 'right', 'hard']),
+})
+
 // Form-specific schemas (string inputs that need conversion)
 export const exerciseFormSchema = z.object({
   name: z.string().min(1, 'Exercise name is required'),
@@ -70,6 +77,19 @@ export const exerciseFormSchema = z.object({
   unit: z.enum(['kg', 'lbs']), // Required, no default for forms
   minReps: z.string().min(1, 'Minimum reps must be at least 1'),
   maxReps: z.string().min(1, 'Maximum reps must be at least 1'),
+})
+
+// Session log form schema
+export const sessionLogFormSchema = z.object({
+  difficulty: z.enum(['easy', 'right', 'hard'], {
+    message: 'Please select a difficulty',
+  }),
+  notes: z
+    .string()
+    .max(200, {
+      message: 'Notes must be less than 200 characters',
+    })
+    .optional(),
 })
 
 // API schema for server functions (parsed numbers)
@@ -82,6 +102,14 @@ export const exerciseCreateSchema = z.object({
   maxReps: z.number().int().positive(),
 })
 
+// Session log create schema
+export const sessionLogCreateSchema = sessionLogInsertSchema.omit({
+  id: true,
+  loggedAt: true, // Auto-generated fields
+})
+
 // Derived TypeScript types
 export type ExerciseForm = z.infer<typeof exerciseFormSchema>
 export type ExerciseCreate = z.infer<typeof exerciseCreateSchema>
+export type SessionLogForm = z.infer<typeof sessionLogFormSchema>
+export type SessionLogCreate = z.infer<typeof sessionLogCreateSchema>
