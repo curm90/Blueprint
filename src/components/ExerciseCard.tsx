@@ -104,6 +104,7 @@ export default function ExerciseCard({
         exercise={exercise}
         open={showExerciseLog}
         onOpenChange={setShowExerciseLog}
+        onProgressionApplied={onRefresh} // Refresh data when weight is updated
       />
       <DeleteAlertDialog
         showDeleteDialog={showDeleteDialog}
