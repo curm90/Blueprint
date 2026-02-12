@@ -36,3 +36,20 @@ export async function deleteExercise(exerciseId: number) {
     console.log({ error })
   }
 }
+
+export async function updateExercise(
+  exerciseId: number,
+  updatedData: Partial<ExerciseCreate>,
+) {
+  try {
+    const res = await db
+      .update(exercises)
+      .set(updatedData)
+      .where(eq(exercises.id, exerciseId))
+    console.log({ res })
+
+    return res
+  } catch (error) {
+    console.log({ error })
+  }
+}

@@ -4,6 +4,7 @@ import {
   addExercise,
   deleteExercise,
   getExercises,
+  updateExercise,
 } from './exercises.functions'
 import type { ExerciseCreate } from '@/db/schema'
 import { exerciseCreateSchema } from '@/db/schema'
@@ -24,4 +25,15 @@ export const deleteExerciseServer = createServerFn({ method: 'POST' })
   .inputValidator(z.object({ id: z.number() }))
   .handler(({ data }) => {
     return deleteExercise(data.id)
+  })
+
+export const updateExerciseServer = createServerFn({ method: 'POST' })
+  .inputValidator(
+    z.object({
+      id: z.number(),
+      updates: exerciseCreateSchema.partial(), // Allow partial updates
+    }),
+  )
+  .handler(async ({ data }) => {
+    return await updateExercise(data.id, data.updates)
   })
