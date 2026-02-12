@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import { useAppForm } from '@/hooks/demo.form'
-import { addExerciseServer } from '@/utils/exercises.server'
+import { useAddExercise } from '@/hooks/exercises.query'
 import { exerciseFormSchema } from '@/db/schema'
 
 // Use the schema from the database file
@@ -25,6 +25,8 @@ export default function AddExerciseForm({
   open = false,
   onOpenChange,
 }: AddExerciseFormProps) {
+  const addExerciseMutation = useAddExercise()
+
   const form = useAppForm({
     defaultValues: {
       name: '',
@@ -37,8 +39,6 @@ export default function AddExerciseForm({
       onChange: schema,
     },
     onSubmit: async ({ value }) => {
-      console.log('Form values:', value)
-
       // Convert string values to integers for database
       const exerciseData = {
         name: value.name,
@@ -53,7 +53,7 @@ export default function AddExerciseForm({
       console.log('Processed exercise data:', exerciseData)
 
       try {
-        await addExerciseServer({ data: exerciseData })
+        await addExerciseMutation.mutateAsync(exerciseData)
         console.log('Exercise added successfully!')
       } catch (error) {
         console.error('Error adding exercise:', error)
@@ -123,7 +123,11 @@ export default function AddExerciseForm({
 
       <div className={`flex justify-end ${asModal ? '' : 'mt-4'}`}>
         <form.AppForm>
-          <form.SubscribeButton label="Save Exercise" />
+          <form.SubscribeButton
+            label={
+              addExerciseMutation.isPending ? 'Adding...' : 'Save Exercise'
+            }
+          />
         </form.AppForm>
       </div>
     </form>

@@ -7,10 +7,7 @@ import {
 } from './ui/dialog'
 import type { Exercise } from '@/db/schema'
 import { useAppForm } from '@/hooks/demo.form'
-import {
-  addExerciseServer,
-  updateExerciseServer,
-} from '@/utils/exercises.server'
+import { useAddExercise, useUpdateExercise } from '@/hooks/exercises.query'
 import { exerciseFormSchema } from '@/db/schema'
 
 // Use the schema from the database file
@@ -31,7 +28,8 @@ export default function EditExerciseForm({
   open = false,
   onOpenChange,
 }: EditExerciseFormProps) {
-  console.log({ open })
+  const addExerciseMutation = useAddExercise()
+  const updateExerciseMutation = useUpdateExercise()
 
   const form = useAppForm({
     defaultValues: {
@@ -45,8 +43,6 @@ export default function EditExerciseForm({
       onChange: schema,
     },
     onSubmit: async ({ value }) => {
-      console.log('Form values:', value)
-
       // Convert string values to integers for database
       const exerciseData = {
         name: value.name,
@@ -71,16 +67,14 @@ export default function EditExerciseForm({
             maxReps: exerciseData.maxReps,
           }
 
-          await updateExerciseServer({
-            data: {
-              id: exercise.id,
-              updates: updateData,
-            },
+          await updateExerciseMutation.mutateAsync({
+            id: exercise.id,
+            updates: updateData,
           })
           console.log('Exercise updated successfully!')
         } else {
           // Add new exercise - only here we set startingWeight = currentWeight
-          await addExerciseServer({ data: exerciseData })
+          await addExerciseMutation.mutateAsync(exerciseData)
           console.log('Exercise added successfully!')
         }
       } catch (error) {
@@ -156,7 +150,15 @@ export default function EditExerciseForm({
       <div className={`flex justify-end ${asModal ? '' : 'mt-4'}`}>
         <form.AppForm>
           <form.SubscribeButton
-            label={exercise ? 'Update Exercise' : 'Save Exercise'}
+            label={
+              exercise
+                ? updateExerciseMutation.isPending
+                  ? 'Updating...'
+                  : 'Update Exercise'
+                : addExerciseMutation.isPending
+                  ? 'Adding...'
+                  : 'Save Exercise'
+            }
           />
         </form.AppForm>
       </div>

@@ -5,25 +5,19 @@ import AddExerciseForm from './AddExerciseForm'
 import EmptyOutline from './Empty'
 import ExerciseCard from './ExerciseCard'
 import { Button } from './ui/button'
-import { deleteExerciseServer } from '@/utils/exercises.server'
+import { useDeleteExercise } from '@/hooks/exercises.query'
 
-export default function Home({
-  exercises,
-  onRefresh,
-}: {
-  exercises: any
-  onRefresh?: () => void
-}) {
+export default function Home({ exercises }: { exercises: any }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const deleteExerciseMutation = useDeleteExercise()
 
   const handleDeleteExercise = async (exercise: any) => {
     try {
       console.log('Delete exercise:', exercise)
-      await deleteExerciseServer({ data: { id: exercise.id } })
-      onRefresh?.() // This triggers the UI refresh!
+      await deleteExerciseMutation.mutateAsync(exercise.id)
     } catch (error) {
       console.error('Failed to delete exercise:', error)
-      // TODO: Show user-friendly error message
+      // Error will be shown via toast or error boundary
     }
   }
 
@@ -58,7 +52,6 @@ export default function Home({
                 key={exercise.id || index}
                 exercise={exercise}
                 onDelete={handleDeleteExercise}
-                onRefresh={onRefresh}
               />
             ))}
           </div>
@@ -83,8 +76,7 @@ export default function Home({
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
         onSave={() => {
-          onRefresh?.() // Refresh exercises list
-          setIsAddModalOpen(false)
+          setIsAddModalOpen(false) // Just close modal - TanStack Query handles cache updates
         }}
       />
     </div>

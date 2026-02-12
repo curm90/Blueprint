@@ -70,8 +70,6 @@ export default function ExerciseLog({
       onChange: sessionLogFormSchema, // Use onChange instead of onSubmit to avoid strict type checking
     },
     onSubmit: async ({ value }) => {
-      console.log('Form submitted with:', value)
-
       // Transform form data to match server expectations
       const data = {
         exerciseId: exercise.id,
