@@ -8,26 +8,32 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import ExerciseLog from './ExerciseLog'
+import EditExerciseForm from './EditExerciseForm'
 import DeleteAlertDialog from './DeleteAlertDialog'
 import type { Exercise } from '@/db/schema'
 
 export default function ExerciseCard({
   exercise,
-  onEdit,
   onDelete,
+  onRefresh,
 }: {
   exercise: Exercise
-  onEdit?: (exercise: Exercise) => void
   onDelete?: (exercise: Exercise) => void
+  onRefresh?: () => void
 }) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [showExerciseLog, setShowExerciseLog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   const handleDelete = () => {
     onDelete?.(exercise)
     setShowDeleteDialog(false)
   }
 
+  const handleEditSave = () => {
+    onRefresh?.() // Refresh the UI after successful edit
+    setIsEditModalOpen(false)
+  }
   return (
     <div className="border border-border/50 rounded-lg p-6 bg-card shadow-sm hover:shadow-md transition-all duration-200 flex flex-col h-full">
       {/* Header with title and actions */}
@@ -49,7 +55,7 @@ export default function ExerciseCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={() => onEdit?.(exercise)}
+              onClick={() => setIsEditModalOpen(true)}
               className="cursor-pointer"
             >
               <Edit className="h-4 w-4 mr-2" />
@@ -86,16 +92,31 @@ export default function ExerciseCard({
         </div>
       </div>
 
-      <Button className="w-full" onClick={() => setIsOpen(true)} size="lg">
+      <Button
+        className="w-full"
+        onClick={() => setShowExerciseLog(true)}
+        size="lg"
+      >
         Log Today's Session
       </Button>
 
-      <ExerciseLog exercise={exercise} open={isOpen} onOpenChange={setIsOpen} />
+      <ExerciseLog
+        exercise={exercise}
+        open={showExerciseLog}
+        onOpenChange={setShowExerciseLog}
+      />
       <DeleteAlertDialog
         showDeleteDialog={showDeleteDialog}
         setShowDeleteDialog={setShowDeleteDialog}
         exercise={exercise}
         handleDelete={handleDelete}
+      />
+      <EditExerciseForm
+        asModal={true}
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        exercise={exercise}
+        onSave={handleEditSave}
       />
     </div>
   )

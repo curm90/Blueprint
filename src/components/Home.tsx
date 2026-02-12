@@ -16,11 +16,6 @@ export default function Home({
 }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
-  const handleEditExercise = (exercise: any) => {
-    console.log('Edit exercise:', exercise)
-    // TODO: Implement edit functionality
-  }
-
   const handleDeleteExercise = async (exercise: any) => {
     try {
       console.log('Delete exercise:', exercise)
@@ -62,8 +57,8 @@ export default function Home({
               <ExerciseCard
                 key={exercise.id || index}
                 exercise={exercise}
-                onEdit={handleEditExercise}
                 onDelete={handleDeleteExercise}
+                onRefresh={onRefresh}
               />
             ))}
           </div>
