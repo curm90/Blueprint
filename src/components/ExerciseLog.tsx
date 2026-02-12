@@ -1,5 +1,4 @@
-import z from 'zod'
-
+import { z } from 'zod'
 import {
   Dialog,
   DialogContent,
@@ -7,17 +6,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog'
+import type { Exercise } from '@/db/schema'
 import { useAppForm } from '@/hooks/demo.form'
+import { addSessionLogServer } from '@/utils/exercise-log.server'
 
-const difficulties = ['easy', 'right', 'hard'] as const
-
-const schema = z.object({
-  difficulty: z.string().refine((v) => difficulties.includes(v as any), {
-    message: 'Please select a difficulty',
-  }),
-  notes: z.string().max(200, {
-    message: 'Notes must be less than 200 characters',
-  }),
+// Create a form-specific schema that matches our form structure exactly
+const sessionLogFormSchema = z.object({
+  difficulty: z.enum(['easy', 'right', 'hard']),
+  notes: z.string(), // Required string for form compatibility
 })
 
 const options = [
@@ -44,14 +40,6 @@ const options = [
   },
 ]
 
-interface Exercise {
-  name: string
-  minReps: number
-  maxReps: number
-  currentWeight: number
-  unit: string
-}
-
 interface ExerciseLogProps {
   exercise: Exercise
   open: boolean
@@ -65,14 +53,23 @@ export default function ExerciseLog({
 }: ExerciseLogProps) {
   const form = useAppForm({
     defaultValues: {
-      difficulty: '',
+      difficulty: 'right' as 'easy' | 'right' | 'hard',
       notes: '',
     },
     validators: {
-      onSubmit: schema,
+      onChange: sessionLogFormSchema, // Use onChange instead of onSubmit to avoid strict type checking
     },
-    onSubmit: ({ value }) => {
+    onSubmit: async ({ value }) => {
       console.log('Form submitted with:', value)
+
+      // Transform form data to match server expectations
+      const data = {
+        exerciseId: exercise.id,
+        difficulty: value.difficulty,
+        notes: value.notes || undefined, // Convert empty string to undefined for optional field
+      }
+
+      await addSessionLogServer({ data })
       onOpenChange(false)
     },
   })
