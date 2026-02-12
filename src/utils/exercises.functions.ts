@@ -45,12 +45,18 @@ export async function getExercisesWithProgress() {
 
 export async function deleteExercise(exerciseId: number) {
   try {
+    // First delete all session logs for this exercise
+    await db.delete(sessionLog).where(eq(sessionLog.exerciseId, exerciseId))
+    console.log(`Deleted session logs for exercise ${exerciseId}`)
+
+    // Then delete the exercise itself
     const res = await db.delete(exercises).where(eq(exercises.id, exerciseId))
-    console.log({ res })
+    console.log('Exercise deleted successfully:', { res })
 
     return res
   } catch (error) {
-    console.log({ error })
+    console.error('Error deleting exercise:', error)
+    throw new Error(`Failed to delete exercise: ${error}`)
   }
 }
 

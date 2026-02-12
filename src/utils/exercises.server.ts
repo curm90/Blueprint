@@ -31,6 +31,7 @@ export const getExercisesWithProgressServer = createServerFn({
 export const deleteExerciseServer = createServerFn({ method: 'POST' })
   .inputValidator(z.object({ id: z.number() }))
   .handler(({ data }) => {
+    console.log('Deleting exercise with ID:', data.id)
     return deleteExercise(data.id)
   })
 
