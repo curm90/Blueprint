@@ -1,14 +1,22 @@
 import { createFileRoute } from '@tanstack/react-router'
 import ProgressList from '@/components/ProgressList'
-import { getExercisesWithProgressServer } from '@/utils/exercises.server'
+import { useExercisesWithProgress } from '@/hooks/exercises.query'
+import { ProgressLoadingSkeleton } from '@/components/ui/skeleton'
 
 export const Route = createFileRoute('/progress')({
   component: RouteComponent,
-  loader: async () => getExercisesWithProgressServer(),
 })
 
 function RouteComponent() {
-  const exercises = Route.useLoaderData()
+  const { data: exercises, isLoading, error } = useExercisesWithProgress()
+
+  if (isLoading) {
+    return <ProgressLoadingSkeleton />
+  }
+
+  if (error) {
+    throw error
+  }
 
   return <ProgressList exercises={exercises} />
 }
