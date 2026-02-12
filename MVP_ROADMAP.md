@@ -145,9 +145,9 @@ CREATE INDEX idx_workout_sessions_logged_at ON workout_sessions(logged_at);
 - [x] Basic routing between pages
 
 ### Phase 2: Database Integration (Week 3)
-- [ ] Supabase project setup
-- [ ] Drizzle schema implementation
-- [ ] CRUD operations for exercises
+- [x] Test sb locally with sqlite
+- [x] Drizzle schema implementation
+- [x] CRUD operations for exercises
 - [ ] Session logging to database
 - [ ] Error handling & loading states
 
@@ -162,7 +162,8 @@ CREATE INDEX idx_workout_sessions_logged_at ON workout_sessions(logged_at);
 - [ ] Metrics calculations
 - [ ] Simple charts/visualizations
 - [ ] Historical data queries
-
+- [ ] Replace local sqlite db with prod db
+ 
 ### Phase 5: Polish & UX (Week 6)
 - [ ] Loading states & skeletons
 - [ ] Error boundaries
