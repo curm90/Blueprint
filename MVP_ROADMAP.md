@@ -155,14 +155,14 @@ CREATE INDEX idx_workout_sessions_logged_at ON workout_sessions(logged_at);
 - [x] Algorithm implementation
 - [x] Consecutive feedback tracking
 - [x] Weight adjustment automation
-- [ ] Testing with various scenarios
+- [x] Testing with various scenarios
 
 ### Phase 4: Progress Tracking (Week 5)
 - [x] Progress page layout
 - [x] Metrics calculations
 - [x] Simple charts/visualizations
 - [ ] Historical data queries
-- [ ] Replace local sqlite db with prod db
+- [ ] Add prod database
  
 ### Phase 5: Polish & UX (Week 6)
 - [ ] Loading states & skeletons
