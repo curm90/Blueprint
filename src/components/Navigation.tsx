@@ -16,9 +16,6 @@ export default function Navigation() {
           <Link to="/progress">
             <li>Progress</li>
           </Link>
-          <Link to="/add-exercise">
-            <li>Add Exercise</li>
-          </Link>
         </div>
       </ul>
     </nav>
