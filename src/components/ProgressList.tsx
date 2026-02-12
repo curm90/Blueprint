@@ -1,26 +1,48 @@
 import { useState } from 'react'
 import { Input } from './ui/input'
-import type { Exercise } from '@/db/schema'
+import type { Exercise, SessionLog } from '@/db/schema'
+
+type ExerciseWithProgress = Exercise & {
+  sessionLogs: Array<SessionLog>
+}
 
 export default function ProgressList({
   exercises,
 }: {
-  exercises: Array<Exercise>
+  exercises: Array<ExerciseWithProgress> | undefined
 }) {
   const [searchTerm, setSearchTerm] = useState('')
 
-  const filteredExercises = exercises.filter((exercise) =>
+  // Add defensive programming for undefined/null exercises
+  const safeExercises = exercises || []
+
+  const filteredExercises = safeExercises.filter((exercise) =>
     exercise.name.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   const getProgress = (current: number, started: number) => {
+    if (!current || !started || started === 0) {
+      return { diff: 0, percentage: 0 }
+    }
     const diff = current - started
     const percentage = Math.round((diff / started) * 100)
     return { diff, percentage }
   }
 
+  const getLastSessionDate = (sessionLogs: Array<SessionLog>) => {
+    if (sessionLogs.length === 0) return 'Never'
+
+    const lastSession = sessionLogs[0] // Already ordered by desc(loggedAt)
+    const loggedAt = lastSession.loggedAt
+    return loggedAt ? new Date(loggedAt).toLocaleDateString() : 'Never'
+  }
+
+  const getTotalSessions = (sessionLogs: Array<SessionLog>) => {
+    return sessionLogs.length
+  }
+
   return (
-    <div className="mx-auto max-w-6xl my-10 flex flex-col gap-6">
+    <div className="mx-auto max-w-6xl my-10 flex flex-col gap-6 px-10">
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-semibold">Progress Overview</h1>
 
@@ -56,6 +78,9 @@ export default function ProgressList({
                   Progress
                 </th>
                 <th className="text-right p-4 font-medium text-muted-foreground">
+                  Sessions
+                </th>
+                <th className="text-right p-4 font-medium text-muted-foreground">
                   Last Session
                 </th>
               </tr>
@@ -63,31 +88,31 @@ export default function ProgressList({
             <tbody>
               {filteredExercises.map((exercise, index) => {
                 const progress = getProgress(
-                  exercise.currentWeight,
-                  exercise.startingWeight,
+                  exercise.currentWeight || 0,
+                  exercise.startingWeight || 0,
                 )
                 const isPositive = progress.diff > 0
                 const unit = exercise.unit || 'kg'
 
                 return (
                   <tr
-                    key={index}
+                    key={exercise.id || index}
                     className="border-b border-border/30 last:border-0 hover:bg-muted/20 transition-colors"
                   >
                     <td className="p-4">
                       <span className="font-medium text-foreground">
-                        {exercise.name}
+                        {exercise.name || 'Unknown Exercise'}
                       </span>
                     </td>
                     <td className="p-4 text-right">
                       <span className="font-semibold text-foreground">
-                        {exercise.currentWeight}
+                        {exercise.currentWeight || 0}
                         {unit}
                       </span>
                     </td>
                     <td className="p-4 text-right">
                       <span className="text-muted-foreground">
-                        {exercise.startingWeight}
+                        {exercise.startingWeight || 0}
                         {unit}
                       </span>
                     </td>
@@ -115,8 +140,13 @@ export default function ProgressList({
                       </div>
                     </td>
                     <td className="p-4 text-right">
+                      <span className="text-sm font-medium text-foreground">
+                        {getTotalSessions(exercise.sessionLogs)}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
                       <span className="text-sm text-muted-foreground">
-                        {/* {exercise.lastSessionDate} */}
+                        {getLastSessionDate(exercise.sessionLogs)}
                       </span>
                     </td>
                   </tr>
@@ -126,10 +156,18 @@ export default function ProgressList({
           </table>
         </div>
 
-        {filteredExercises.length === 0 && (
+        {filteredExercises.length === 0 && safeExercises.length > 0 && (
           <div className="p-12 text-center">
             <span className="text-muted-foreground">
               No exercises found matching "{searchTerm}"
+            </span>
+          </div>
+        )}
+
+        {safeExercises.length === 0 && (
+          <div className="p-12 text-center">
+            <span className="text-muted-foreground">
+              No exercises found. Add some exercises first.
             </span>
           </div>
         )}
