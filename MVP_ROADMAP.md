@@ -148,19 +148,19 @@ CREATE INDEX idx_workout_sessions_logged_at ON workout_sessions(logged_at);
 - [x] Test sb locally with sqlite
 - [x] Drizzle schema implementation
 - [x] CRUD operations for exercises
-- [ ] Session logging to database
+- [x] Session logging to database
 - [ ] Error handling & loading states
 
 ### Phase 3: Progressive Overload Logic (Week 4)
-- [ ] Algorithm implementation
-- [ ] Consecutive feedback tracking
-- [ ] Weight adjustment automation
+- [x] Algorithm implementation
+- [x] Consecutive feedback tracking
+- [x] Weight adjustment automation
 - [ ] Testing with various scenarios
 
 ### Phase 4: Progress Tracking (Week 5)
-- [ ] Progress page layout
-- [ ] Metrics calculations
-- [ ] Simple charts/visualizations
+- [x] Progress page layout
+- [x] Metrics calculations
+- [x] Simple charts/visualizations
 - [ ] Historical data queries
 - [ ] Replace local sqlite db with prod db
  
