@@ -6,7 +6,14 @@ export default function Navigation() {
       <ul className="flex justify-between p-4 border-b">
         <div>
           <Link to="/">
-            <li>Blueprint</li>
+            <div className="flex items-center gap-2">
+              <img
+                src="/logo192.png"
+                alt="Blueprint Logo"
+                className="h-8 w-8"
+              />
+              <li>Blueprint</li>
+            </div>
           </Link>
         </div>
         <div className="flex gap-4 items-center">
