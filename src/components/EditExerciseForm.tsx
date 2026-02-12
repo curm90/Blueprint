@@ -62,16 +62,24 @@ export default function EditExerciseForm({
 
       try {
         if (exercise) {
-          // Edit existing exercise
+          // Edit existing exercise - don't update startingWeight to preserve progress history
+          const updateData = {
+            name: exerciseData.name,
+            currentWeight: exerciseData.currentWeight,
+            unit: exerciseData.unit,
+            minReps: exerciseData.minReps,
+            maxReps: exerciseData.maxReps,
+          }
+
           await updateExerciseServer({
             data: {
               id: exercise.id,
-              updates: exerciseData,
+              updates: updateData,
             },
           })
           console.log('Exercise updated successfully!')
         } else {
-          // Add new exercise
+          // Add new exercise - only here we set startingWeight = currentWeight
           await addExerciseServer({ data: exerciseData })
           console.log('Exercise added successfully!')
         }

@@ -122,7 +122,9 @@ export default function ProgressList({
                           className={`text-sm font-medium px-2 py-1 rounded-md ${
                             isPositive
                               ? 'text-green-700 bg-green-50'
-                              : 'text-gray-600 bg-gray-50'
+                              : progress.diff < 0
+                                ? 'text-red-700 bg-red-50'
+                                : 'text-gray-600 bg-gray-50'
                           }`}
                         >
                           {isPositive ? '+' : ''}
@@ -131,7 +133,11 @@ export default function ProgressList({
                         </span>
                         <span
                           className={`text-xs ${
-                            isPositive ? 'text-green-600' : 'text-gray-500'
+                            isPositive
+                              ? 'text-green-600'
+                              : progress.diff < 0
+                                ? 'text-red-600'
+                                : 'text-gray-500'
                           }`}
                         >
                           {isPositive ? '+' : ''}
