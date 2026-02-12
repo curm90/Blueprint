@@ -1,32 +1,15 @@
 import { useState } from 'react'
 import { Input } from './ui/input'
+import type { Exercise } from '@/db/schema'
 
-const mockExercises = [
-  {
-    name: 'Smith Machine Incline Press',
-    current: 65,
-    started: 50,
-    lastDate: 'Feb 6, 2026',
-  },
-  { name: 'Barbell Squat', current: 100, started: 80, lastDate: 'Feb 5, 2026' },
-  { name: 'Deadlift', current: 120, started: 100, lastDate: 'Feb 4, 2026' },
-  { name: 'Bench Press', current: 75, started: 60, lastDate: 'Feb 3, 2026' },
-  {
-    name: 'Pull-ups',
-    current: 15,
-    started: 8,
-    lastDate: 'Feb 6, 2026',
-    unit: 'reps',
-  },
-  { name: 'Overhead Press', current: 45, started: 35, lastDate: 'Feb 2, 2026' },
-  { name: 'Leg Press', current: 180, started: 140, lastDate: 'Feb 5, 2026' },
-  { name: 'Dumbbell Row', current: 30, started: 22.5, lastDate: 'Feb 4, 2026' },
-]
-
-export default function ProgressList() {
+export default function ProgressList({
+  exercises,
+}: {
+  exercises: Array<Exercise>
+}) {
   const [searchTerm, setSearchTerm] = useState('')
 
-  const filteredExercises = mockExercises.filter((exercise) =>
+  const filteredExercises = exercises.filter((exercise) =>
     exercise.name.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
@@ -79,7 +62,10 @@ export default function ProgressList() {
             </thead>
             <tbody>
               {filteredExercises.map((exercise, index) => {
-                const progress = getProgress(exercise.current, exercise.started)
+                const progress = getProgress(
+                  exercise.currentWeight,
+                  exercise.startingWeight,
+                )
                 const isPositive = progress.diff > 0
                 const unit = exercise.unit || 'kg'
 
@@ -95,13 +81,13 @@ export default function ProgressList() {
                     </td>
                     <td className="p-4 text-right">
                       <span className="font-semibold text-foreground">
-                        {exercise.current}
+                        {exercise.currentWeight}
                         {unit}
                       </span>
                     </td>
                     <td className="p-4 text-right">
                       <span className="text-muted-foreground">
-                        {exercise.started}
+                        {exercise.startingWeight}
                         {unit}
                       </span>
                     </td>
@@ -130,7 +116,7 @@ export default function ProgressList() {
                     </td>
                     <td className="p-4 text-right">
                       <span className="text-sm text-muted-foreground">
-                        {exercise.lastDate}
+                        {/* {exercise.lastSessionDate} */}
                       </span>
                     </td>
                   </tr>
