@@ -12,7 +12,7 @@ export async function addExercise(exercise: ExerciseCreate) {
     return res
   } catch (error) {
     console.error('Error adding exercise to database:', error)
-    throw new Error('Failed to add exercise to database')
+    throw new Error(`Failed to add exercise to database: ${error}`)
   }
 }
 
@@ -22,7 +22,8 @@ export async function getExercises() {
     console.log('Exercises retrieved successfully:', { res })
     return res
   } catch (error) {
-    console.log({ error })
+    console.error({ error })
+    throw new Error(`Failed to retrieve exercises: ${error}`)
   }
 }
 
@@ -38,8 +39,8 @@ export async function getExercisesWithProgress() {
     console.log('Exercises with progress retrieved successfully:', { res })
     return res
   } catch (error) {
-    console.log({ error })
-    throw error
+    console.error({ error })
+    throw new Error(`Failed to retrieve exercises with progress: ${error}`)
   }
 }
 
@@ -72,7 +73,7 @@ export async function updateExercise(
     console.log('Exercise updated successfully:', { res })
     return res
   } catch (error) {
-    console.log({ error })
-    throw error
+    console.error({ error })
+    throw new Error(`Failed to update exercise: ${error}`)
   }
 }
