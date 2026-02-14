@@ -149,7 +149,7 @@ CREATE INDEX idx_workout_sessions_logged_at ON workout_sessions(logged_at);
 - [x] Drizzle schema implementation
 - [x] CRUD operations for exercises
 - [x] Session logging to database
-- [ ] Error handling & loading states
+- [x] Error handling & loading states
 
 ### Phase 3: Progressive Overload Logic (Week 4)
 - [x] Algorithm implementation
