@@ -50,7 +50,9 @@ interface ExerciseLogProps {
   exercise: Exercise
   open: boolean
   onOpenChange: (open: boolean) => void
-  onProgressionApplied?: () => void // Callback when weight is updated
+  onProgressionApplied?: (exerciseId: number) => void // Callback when weight is updated, pass exercise ID
+  asInline?: boolean // If true, render inline instead of in a dialog
+  workoutId?: number // Optional workout ID to associate session logs with
 }
 
 export default function ExerciseLog({
@@ -58,6 +60,8 @@ export default function ExerciseLog({
   open,
   onOpenChange,
   onProgressionApplied,
+  asInline = false,
+  workoutId,
 }: ExerciseLogProps) {
   const [progressionResult, setProgressionResult] = useState<any>(null)
   const [showProgression, setShowProgression] = useState(false)
@@ -73,6 +77,7 @@ export default function ExerciseLog({
       // Transform form data to match server expectations
       const data = {
         exerciseId: exercise.id,
+        workoutId, // Include workoutId if provided
         difficulty: value.difficulty,
         notes: value.notes || undefined, // Convert empty string to undefined for optional field
       }
@@ -80,8 +85,10 @@ export default function ExerciseLog({
       // Log the session
       await addSessionLogServer({ data })
 
-      // Close the log form immediately after saving
-      onOpenChange(false)
+      // Close the log form immediately after saving (unless inline)
+      if (!asInline) {
+        onOpenChange(false)
+      }
 
       // Calculate weight progression based on this session
       const progression = await calculateWeightProgressionServer({
@@ -102,7 +109,7 @@ export default function ExerciseLog({
       await applyWeightProgressionServer({
         data: { exerciseId: exercise.id },
       })
-      onProgressionApplied?.() // Notify parent to refresh data
+      onProgressionApplied?.(exercise.id) // Pass exercise ID to callback
     }
 
     // Close progression modal
@@ -116,48 +123,60 @@ export default function ExerciseLog({
     setProgressionResult(null)
   }
 
-  return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{exercise.name}</DialogTitle>
-            <DialogDescription>
+  const FormContent = () => (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        form.handleSubmit()
+      }}
+    >
+      <div className="flex flex-col gap-4">
+        {!asInline && <p className="font-medium">How did it go?</p>}
+        {asInline && (
+          <div className="mb-3">
+            <h3 className="font-bold text-lg">{exercise.name}</h3>
+            <p className="text-sm text-muted-foreground">
               Target: {exercise.currentWeight}
               {exercise.unit} × {exercise.minReps}-{exercise.maxReps} reps
-            </DialogDescription>
-          </DialogHeader>
+            </p>
+          </div>
+        )}
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              form.handleSubmit()
-            }}
-          >
-            <div className="flex flex-col gap-4">
-              <p className="font-medium">How did it go?</p>
+        <form.AppField
+          name="difficulty"
+          children={(field) => <field.DifficultySelector options={options} />}
+        />
 
-              <form.AppField
-                name="difficulty"
-                children={(field) => (
-                  <field.DifficultySelector options={options} />
-                )}
-              />
+        <form.AppField
+          name="notes"
+          children={(field) => <field.TextArea label="Notes (Optional)" />}
+        />
 
-              <form.AppField
-                name="notes"
-                children={(field) => (
-                  <field.TextArea label="Notes (Optional)" />
-                )}
-              />
+        <form.AppForm>
+          <form.SubscribeButton label="Save Log" />
+        </form.AppForm>
+      </div>
+    </form>
+  )
 
-              <form.AppForm>
-                <form.SubscribeButton label="Save Log" />
-              </form.AppForm>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+  return (
+    <>
+      {asInline ? (
+        <FormContent />
+      ) : (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{exercise.name}</DialogTitle>
+              <DialogDescription>
+                Target: {exercise.currentWeight}
+                {exercise.unit} × {exercise.minReps}-{exercise.maxReps} reps
+              </DialogDescription>
+            </DialogHeader>
+            <FormContent />
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Separate progression dialog */}
       <Dialog
