@@ -18,6 +18,7 @@ import {
 } from './ui/dropdown-menu'
 import WorkoutLog from './WorkoutLog'
 import type { WorkoutWithExercises } from '@/db/schema'
+import { useIsWorkoutCompletedToday } from '@/hooks/workouts.query'
 
 interface WorkoutCardProps {
   workout: WorkoutWithExercises
@@ -34,9 +35,19 @@ export default function WorkoutCard({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
+  // Check if this workout was completed today
+  const { data: isCompletedToday = false } = useIsWorkoutCompletedToday(
+    workout.id,
+  )
+
   const handleDelete = () => {
     onDelete?.(workout)
     setShowDeleteDialog(false)
+  }
+
+  const handleWorkoutComplete = () => {
+    onRefresh?.()
+    setShowWorkoutLog(false)
   }
 
   const handleEditSave = () => {
@@ -61,7 +72,13 @@ export default function WorkoutCard({
               {workout.name}
             </h3>
             {isCompleted && <CheckCircle className="h-5 w-5 text-green-500" />}
-            {isToday && (
+            {isCompletedToday && (
+              <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
+                <CheckCircle className="h-3 w-3" />
+                Completed Today
+              </span>
+            )}
+            {isToday && !isCompletedToday && (
               <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
                 Today
               </span>
@@ -132,13 +149,12 @@ export default function WorkoutCard({
                 className="flex items-center justify-between text-sm border border-border/30 rounded-md px-3 py-2 bg-muted/30"
               >
                 <span className="font-medium text-foreground">
-                  {workoutExercise.exercise.name}
+                  {workoutExercise.name}
                 </span>
                 <div className="text-muted-foreground text-xs">
-                  {workoutExercise.exercise.currentWeight}
-                  {workoutExercise.exercise.unit} •{' '}
-                  {workoutExercise.exercise.minReps}-
-                  {workoutExercise.exercise.maxReps} reps
+                  {workoutExercise.currentWeight}
+                  {workoutExercise.unit} • {workoutExercise.minReps}-
+                  {workoutExercise.maxReps} reps
                 </div>
               </div>
             ))}
@@ -151,11 +167,15 @@ export default function WorkoutCard({
         className="w-full"
         onClick={() => setShowWorkoutLog(true)}
         size="lg"
-        variant={isCompleted ? 'outline' : 'default'}
-        disabled={workout.workoutExercises.length === 0}
+        variant={isCompletedToday ? 'outline' : 'default'}
+        disabled={workout.workoutExercises.length === 0 || isCompletedToday}
       >
         <Play className="h-4 w-4 mr-2" />
-        {isCompleted ? 'Log Again' : 'Start Workout'}
+        {isCompletedToday
+          ? 'Completed Today'
+          : isCompleted
+            ? 'Start Workout'
+            : 'Start Workout'}
       </Button>
 
       {/* Modals */}
@@ -163,7 +183,7 @@ export default function WorkoutCard({
         workout={workout}
         open={showWorkoutLog}
         onOpenChange={setShowWorkoutLog}
-        onWorkoutComplete={onRefresh}
+        onWorkoutComplete={handleWorkoutComplete}
       />
 
       <DeleteAlertDialog

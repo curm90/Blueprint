@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight, CheckCircle, Target } from 'lucide-react'
 import ExerciseLog from './ExerciseLog'
 import { Button } from './ui/button'
@@ -10,7 +10,10 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import type { WorkoutWithExercises } from '@/db/schema'
-import { useLogWorkoutComplete } from '@/hooks/workouts.query'
+import {
+  useCompleteWorkoutSession,
+  useStartWorkoutSession,
+} from '@/hooks/workouts.query'
 
 interface WorkoutLogProps {
   workout: WorkoutWithExercises
@@ -28,12 +31,34 @@ export default function WorkoutLog({
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
   const [completedExercises, setCompletedExercises] = useState<number[]>([])
   const [isWorkoutComplete, setIsWorkoutComplete] = useState(false)
-  const logWorkoutCompleteMutation = useLogWorkoutComplete()
+  const [workoutLogId, setWorkoutLogId] = useState<number | null>(null)
+
+  const startWorkoutSessionMutation = useStartWorkoutSession()
+  const completeWorkoutSessionMutation = useCompleteWorkoutSession()
 
   const exercises = workout.workoutExercises
   const currentExercise = exercises[currentExerciseIndex]
   const isLastExercise = currentExerciseIndex === exercises.length - 1
   const allExercisesCompleted = completedExercises.length === exercises.length
+
+  // Start workout session when modal opens
+  useEffect(() => {
+    if (open && !workoutLogId) {
+      console.log('🟡 Starting workout session for workout:', workout.id)
+      startWorkoutSessionMutation
+        .mutateAsync({
+          workoutId: workout.id,
+          notes: `Started ${workout.name} session`,
+        })
+        .then((result) => {
+          console.log('🟢 Workout session started successfully:', result)
+          setWorkoutLogId(result.id)
+        })
+        .catch((error) => {
+          console.error('🔴 Failed to start workout session:', error)
+        })
+    }
+  }, [open, workoutLogId, workout.id, workout.name])
 
   // Reset state when modal opens/closes
   const handleOpenChange = (newOpen: boolean) => {
@@ -42,6 +67,7 @@ export default function WorkoutLog({
       setCurrentExerciseIndex(0)
       setCompletedExercises([])
       setIsWorkoutComplete(false)
+      setWorkoutLogId(null)
     }
     onOpenChange(newOpen)
   }
@@ -63,10 +89,12 @@ export default function WorkoutLog({
 
   const handleCompleteWorkout = async () => {
     try {
-      await logWorkoutCompleteMutation.mutateAsync({
-        workoutId: workout.id,
-        notes: `Completed workout: ${workout.name}`,
-      })
+      if (workoutLogId) {
+        await completeWorkoutSessionMutation.mutateAsync({
+          workoutLogId,
+          notes: `Completed workout: ${workout.name}`,
+        })
+      }
       onWorkoutComplete?.()
       handleOpenChange(false)
     } catch (error) {
@@ -110,7 +138,7 @@ export default function WorkoutLog({
                     className="flex items-center gap-2 text-sm"
                   >
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>{exercise.exercise.name}</span>
+                    <span>{exercise.name}</span>
                   </div>
                 ))}
               </div>
@@ -120,9 +148,9 @@ export default function WorkoutLog({
               <Button
                 onClick={handleCompleteWorkout}
                 className="flex-1"
-                disabled={logWorkoutCompleteMutation.isPending}
+                disabled={completeWorkoutSessionMutation.isPending}
               >
-                {logWorkoutCompleteMutation.isPending
+                {completeWorkoutSessionMutation.isPending
                   ? 'Saving...'
                   : 'Save Workout'}
               </Button>
@@ -138,8 +166,8 @@ export default function WorkoutLog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
             {workout.name}
@@ -150,7 +178,7 @@ export default function WorkoutLog({
         </DialogHeader>
 
         {/* Progress Bar */}
-        <div className="space-y-2">
+        <div className="space-y-2 shrink-0">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
               Exercise {currentExerciseIndex + 1} of {exercises.length}
@@ -170,50 +198,53 @@ export default function WorkoutLog({
         </div>
 
         {/* Exercise Navigation */}
-        <div className="overflow-x-auto py-2">
+        <div className="overflow-x-auto py-2 shrink-0">
           <div className="flex items-center gap-2 min-w-max">
             {exercises.map((exercise, index) => (
               <button
                 key={exercise.id}
                 onClick={() => setCurrentExerciseIndex(index)}
                 className={`
-                  flex-shrink-0 min-w-[120px] text-xs p-2 rounded-md border transition-all
+                  shrink-0 min-w-24 text-xs p-2 rounded-md border transition-all
                   ${
                     index === currentExerciseIndex
                       ? 'border-primary bg-primary/10 text-primary'
-                      : completedExercises.includes(exercise.exercise.id)
+                      : completedExercises.includes(exercise.id)
                         ? 'border-green-500 bg-green-50 text-green-700'
                         : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/50'
                   }
                 `}
               >
-                {completedExercises.includes(exercise.exercise.id) && (
+                {completedExercises.includes(exercise.id) && (
                   <CheckCircle className="h-3 w-3 mx-auto mb-1" />
                 )}
-                <div className="text-center">{exercise.exercise.name}</div>
+                <div className="text-center truncate">{exercise.name}</div>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Current Exercise Log */}
-        <div className="border border-border/50 rounded-lg p-4 bg-muted/20">
-          <ExerciseLog
-            exercise={currentExercise.exercise}
-            open={true}
-            onOpenChange={() => {}} // Don't allow closing individual exercise log
-            onProgressionApplied={(exerciseId) =>
-              handleExerciseComplete(exerciseId)
-            }
-            asInline={true}
-            workoutId={workout.id}
-          />
+        {/* Current Exercise Log - Scrollable */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="border border-border/50 rounded-lg p-3 bg-muted/20">
+            <ExerciseLog
+              exercise={currentExercise}
+              open={true}
+              onOpenChange={() => {}} // Don't allow closing individual exercise log
+              onProgressionApplied={(exerciseId) =>
+                handleExerciseComplete(exerciseId)
+              }
+              asInline={true}
+              workoutLogId={workoutLogId}
+            />
+          </div>
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between">
+        <div className="flex justify-between pt-3 border-t shrink-0">
           <Button
             variant="outline"
+            size="sm"
             onClick={goToPreviousExercise}
             disabled={currentExerciseIndex === 0}
           >
@@ -224,6 +255,7 @@ export default function WorkoutLog({
           <div className="flex gap-2">
             {!isLastExercise ? (
               <Button
+                size="sm"
                 onClick={goToNextExercise}
                 disabled={currentExerciseIndex >= exercises.length - 1}
               >
@@ -231,12 +263,12 @@ export default function WorkoutLog({
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : allExercisesCompleted ? (
-              <Button onClick={() => setIsWorkoutComplete(true)}>
+              <Button size="sm" onClick={() => setIsWorkoutComplete(true)}>
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Finish Workout
               </Button>
             ) : (
-              <Button variant="outline" disabled>
+              <Button variant="outline" size="sm" disabled>
                 Complete all exercises to finish
               </Button>
             )}
