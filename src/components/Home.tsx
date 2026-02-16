@@ -1,84 +1,62 @@
-import { useState } from 'react'
-import { PlusIcon } from 'lucide-react'
-
-import AddExerciseForm from './AddExerciseForm'
-import EmptyOutline from './Empty'
-import ExerciseCard from './ExerciseCard'
-import { Button } from './ui/button'
-import { useDeleteExercise } from '@/hooks/exercises.query'
+import { Calendar, Dumbbell } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
+import ExercisesTab from './ExercisesTab'
+import WorkoutsTab from './WorkoutsTab'
+import { useWorkouts } from '@/hooks/workouts.query'
 
 export default function Home({ exercises }: { exercises: any }) {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const deleteExerciseMutation = useDeleteExercise()
+  const { data: workouts, isLoading: workoutsLoading } = useWorkouts()
 
-  const handleDeleteExercise = async (exercise: any) => {
-    try {
-      console.log('Delete exercise:', exercise)
-      await deleteExerciseMutation.mutateAsync(exercise.id)
-    } catch (error) {
-      console.error('Failed to delete exercise:', error)
-      // Error will be shown via toast or error boundary
-    }
+  if (workoutsLoading) {
+    return (
+      <div className="mx-auto my-10 max-w-6xl px-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-muted-foreground">Loading workouts...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="mx-auto my-10 max-w-6xl px-6">
-      {exercises ? (
-        <div className="flex flex-col gap-8">
-          {/* Header Section */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Today's Workout
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}{' '}
-                ready to log
-              </p>
-            </div>
-            <Button
-              className="flex items-center gap-2"
-              onClick={() => setIsAddModalOpen(true)}
-            >
-              <PlusIcon className="h-4 w-4" />
-              Add Exercise
-            </Button>
+      <div className="flex flex-col gap-8">
+        {/* Header Section */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Your Fitness Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Track exercises and manage workout routines
+          </p>
+        </div>
+
+        {/* Tabs Section */}
+        <Tabs defaultValue="exercises" className="w-full">
+          <div className="flex justify-center mb-8">
+            <TabsList className="grid w-75 grid-cols-2">
+              <TabsTrigger
+                value="exercises"
+                className="flex items-center gap-2"
+              >
+                <Dumbbell className="h-4 w-4" />
+                Exercises
+              </TabsTrigger>
+              <TabsTrigger value="workouts" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Workouts
+              </TabsTrigger>
+            </TabsList>
           </div>
 
-          {/* Exercise Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {exercises.map((exercise: any, index: number) => (
-              <ExerciseCard
-                key={exercise.id || index}
-                exercise={exercise}
-                onDelete={handleDeleteExercise}
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-6">
-          <EmptyOutline />
-          <Button
-            size="lg"
-            className="flex items-center gap-2"
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            <PlusIcon className="h-5 w-5" />
-            Add Your First Exercise
-          </Button>
-        </div>
-      )}
+          <TabsContent value="exercises">
+            <ExercisesTab exercises={exercises || []} />
+          </TabsContent>
 
-      {/* Add Exercise Modal */}
-      <AddExerciseForm
-        asModal={true}
-        open={isAddModalOpen}
-        onOpenChange={setIsAddModalOpen}
-        onSave={() => {
-          setIsAddModalOpen(false) // Just close modal - TanStack Query handles cache updates
-        }}
-      />
+          <TabsContent value="workouts">
+            <WorkoutsTab workouts={workouts || []} />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   )
 }
