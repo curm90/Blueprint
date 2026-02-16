@@ -170,28 +170,30 @@ export default function WorkoutLog({
         </div>
 
         {/* Exercise Navigation */}
-        <div className="flex items-center gap-2 py-2">
-          {exercises.map((exercise, index) => (
-            <button
-              key={exercise.id}
-              onClick={() => setCurrentExerciseIndex(index)}
-              className={`
-                flex-1 text-xs p-2 rounded-md border transition-all
-                ${
-                  index === currentExerciseIndex
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : completedExercises.includes(exercise.exercise.id)
-                      ? 'border-green-500 bg-green-50 text-green-700'
-                      : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/50'
-                }
-              `}
-            >
-              {completedExercises.includes(exercise.exercise.id) && (
-                <CheckCircle className="h-3 w-3 mx-auto mb-1" />
-              )}
-              <div className="truncate">{exercise.exercise.name}</div>
-            </button>
-          ))}
+        <div className="overflow-x-auto py-2">
+          <div className="flex items-center gap-2 min-w-max">
+            {exercises.map((exercise, index) => (
+              <button
+                key={exercise.id}
+                onClick={() => setCurrentExerciseIndex(index)}
+                className={`
+                  flex-shrink-0 min-w-[120px] text-xs p-2 rounded-md border transition-all
+                  ${
+                    index === currentExerciseIndex
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : completedExercises.includes(exercise.exercise.id)
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-border bg-muted/30 text-muted-foreground hover:border-primary/50'
+                  }
+                `}
+              >
+                {completedExercises.includes(exercise.exercise.id) && (
+                  <CheckCircle className="h-3 w-3 mx-auto mb-1" />
+                )}
+                <div className="text-center">{exercise.exercise.name}</div>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Current Exercise Log */}
