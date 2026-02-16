@@ -9,10 +9,9 @@ import { useAppForm } from '@/hooks/demo.form'
 import { useAddExercise } from '@/hooks/exercises.query'
 import { exerciseFormSchema } from '@/db/schema'
 
-// Use the schema from the database file
 const schema = exerciseFormSchema
 
-interface AddExerciseFormProps {
+type AddExerciseFormProps = {
   onSave?: () => void
   asModal?: boolean
   open?: boolean

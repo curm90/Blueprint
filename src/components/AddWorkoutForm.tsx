@@ -165,15 +165,17 @@ function FormContent({
   )
 }
 
-interface AddWorkoutFormProps {
+type AddWorkoutFormProps = {
   onSave?: () => void
   asModal?: boolean
+  open?: boolean
   onOpenChange?: (open: boolean) => void
 }
 
 export default function AddWorkoutForm({
   onSave,
   asModal = false,
+  open = false,
   onOpenChange,
 }: AddWorkoutFormProps) {
   const addWorkoutMutation = useAddWorkout()
@@ -243,11 +245,11 @@ export default function AddWorkoutForm({
     />
   )
 
-  if (asModal) {
+  if (asModal && open) {
     return (
       <>
         {/* Custom modal backdrop */}
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -274,18 +276,14 @@ export default function AddWorkoutForm({
                 </button>
               </div>
             </div>
-            
+
             {/* Modal body - scrollable */}
             <div className="overflow-y-auto max-h-[calc(80vh-8rem)]">
-              <div className="p-6">
-                {FormContentElement}
-              </div>
+              <div className="p-6">{FormContentElement}</div>
             </div>
           </div>
         </div>
       </>
     )
   }
-
-  return <div className="mx-auto mt-12 max-w-125">{FormContentElement}</div>
 }
