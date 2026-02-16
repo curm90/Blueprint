@@ -1,10 +1,7 @@
-import { Calendar, Dumbbell } from 'lucide-react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import ExercisesTab from './ExercisesTab'
 import WorkoutsTab from './WorkoutsTab'
 import { useWorkouts } from '@/hooks/workouts.query'
 
-export default function Home({ exercises }: { exercises: any }) {
+export default function Home() {
   const { data: workouts, isLoading: workoutsLoading } = useWorkouts()
 
   if (workoutsLoading) {
@@ -30,32 +27,8 @@ export default function Home({ exercises }: { exercises: any }) {
           </p>
         </div>
 
-        {/* Tabs Section */}
-        <Tabs defaultValue="exercises" className="w-full">
-          <div className="flex justify-center mb-8">
-            <TabsList className="grid w-75 grid-cols-2">
-              <TabsTrigger
-                value="exercises"
-                className="flex items-center gap-2"
-              >
-                <Dumbbell className="h-4 w-4" />
-                Exercises
-              </TabsTrigger>
-              <TabsTrigger value="workouts" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Workouts
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="exercises">
-            <ExercisesTab exercises={exercises || []} />
-          </TabsContent>
-
-          <TabsContent value="workouts">
-            <WorkoutsTab workouts={workouts || []} />
-          </TabsContent>
-        </Tabs>
+        {/* Workouts Section */}
+        <WorkoutsTab workouts={workouts || []} />
       </div>
     </div>
   )
