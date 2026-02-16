@@ -1,18 +1,9 @@
-import { useState } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from './ui/dialog'
-import { useAppForm } from '@/hooks/demo.form'
+import { useCallback, useState } from 'react'
+import { Input } from './ui/input'
+import { Label } from './ui/label'
+import { Button } from './ui/button'
 import { useAddWorkout } from '@/hooks/workouts.query'
 import { useExercises } from '@/hooks/exercises.query'
-import { workoutFormSchema } from '@/db/schema'
-
-// Use the schema from the database file
-const schema = workoutFormSchema
 
 // Days of the week
 const DAYS_OF_WEEK = [
@@ -25,115 +16,41 @@ const DAYS_OF_WEEK = [
   { short: 'Sun', full: 'Sunday' },
 ]
 
-interface AddWorkoutFormProps {
-  onSave?: () => void
-  asModal?: boolean
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
-}
-
-export default function AddWorkoutForm({
-  onSave,
-  asModal = false,
-  open = false,
-  onOpenChange,
-}: AddWorkoutFormProps) {
-  const addWorkoutMutation = useAddWorkout()
-  const { data: exercises } = useExercises()
-  const [selectedExercises, setSelectedExercises] = useState<number[]>([])
-  const [selectedDays, setSelectedDays] = useState<string[]>([])
-
-  const form = useAppForm({
-    defaultValues: {
-      name: '',
-      selectedDays: [] as string[],
-      exerciseIds: [] as number[],
-    },
-    validators: {
-      onChange: schema,
-    },
-    onSubmit: async ({ value }) => {
-      // Prepare workout data
-      const workoutData = {
-        name: value.name,
-        selectedDays: selectedDays,
-        exerciseIds: selectedExercises,
-      }
-
-      console.log('Processed workout data:', workoutData)
-
-      try {
-        await addWorkoutMutation.mutateAsync(workoutData)
-        console.log('Workout added successfully!')
-      } catch (error) {
-        console.error('Error adding workout:', error)
-        return // Don't reset form if there's an error
-      }
-
-      // Reset form after successful submission
-      form.reset()
-      setSelectedExercises([])
-      setSelectedDays([])
-
-      // Call onSave callback and close modal if used as modal
-      onSave?.()
-      if (asModal) {
-        onOpenChange?.(false)
-      }
-    },
-  })
-
-  const toggleExercise = (exerciseId: number) => {
-    setSelectedExercises((prev) => {
-      const isSelected = prev.includes(exerciseId)
-      const newSelection = isSelected
-        ? prev.filter((id) => id !== exerciseId)
-        : [...prev, exerciseId]
-
-      // Update form field to sync with validation
-      form.setFieldValue('exerciseIds', newSelection)
-      return newSelection
-    })
-  }
-
-  const toggleDay = (day: string) => {
-    setSelectedDays((prev) => {
-      const isSelected = prev.includes(day)
-      const newSelection = isSelected
-        ? prev.filter((d) => d !== day)
-        : [...prev, day]
-
-      // Update form field to sync with validation
-      form.setFieldValue('selectedDays', newSelection)
-      return newSelection
-    })
-  }
-
-  const FormContent = () => (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        form.handleSubmit()
-      }}
+// Extract FormContent as stable component OUTSIDE main component to prevent unmount/mount cycles
+function FormContent({
+  selectedExercises,
+  selectedDays,
+  toggleExercise,
+  toggleDay,
+  exercises,
+  addWorkoutMutation,
+  workoutName,
+  setWorkoutName,
+  onSubmit,
+  asModal,
+}: {
+  selectedExercises: number[]
+  selectedDays: string[]
+  toggleExercise: (id: number) => void
+  toggleDay: (day: string) => void
+  exercises: any[]
+  addWorkoutMutation: any
+  workoutName: string
+  setWorkoutName: (name: string) => void
+  onSubmit: (e: React.FormEvent) => void
+  asModal: boolean
+}) {
+  return (
+    <div
       className={
         asModal
-          ? 'flex flex-col gap-4'
+          ? 'flex flex-col gap-4 max-h-[80vh]'
           : 'border rounded-md p-12 flex flex-col gap-4'
       }
     >
       {!asModal && <h1 className="text-2xl font-bold mb-4">Add Workout</h1>}
 
-      <form.AppField
-        name="name"
-        children={(field) => (
-          <field.TextField
-            label="Workout Name"
-            placeholder="e.g., Upper Body, Leg Day"
-          />
-        )}
-      />
-
-      {/* Days Selection */}
+      {/* Days Selection - OUTSIDE form */}
       <div className="space-y-3">
         <label className="text-sm font-medium text-foreground">
           Select Days
@@ -141,10 +58,11 @@ export default function AddWorkoutForm({
 
         <div className="grid grid-cols-7 gap-2">
           {DAYS_OF_WEEK.map((day) => (
-            <label
+            <button
               key={day.short}
-              className={`
-                flex flex-col items-center p-3 rounded-md border cursor-pointer transition-colors
+              type="button"
+              onClick={() => toggleDay(day.short)}
+              className={`flex flex-col items-center p-3 rounded-md border transition-colors
                 ${
                   selectedDays.includes(day.short)
                     ? 'border-primary bg-primary/10 text-primary'
@@ -152,15 +70,9 @@ export default function AddWorkoutForm({
                 }
               `}
             >
-              <input
-                type="checkbox"
-                checked={selectedDays.includes(day.short)}
-                onChange={() => toggleDay(day.short)}
-                className="sr-only"
-              />
               <div className="font-medium text-sm">{day.short}</div>
               <div className="text-xs opacity-75">{day.full.slice(0, 3)}</div>
-            </label>
+            </button>
           ))}
         </div>
 
@@ -172,29 +84,32 @@ export default function AddWorkoutForm({
         )}
       </div>
 
-      {/* Exercise Selection */}
+      {/* Exercise Selection - OUTSIDE form */}
       <div className="space-y-3">
         <label className="text-sm font-medium text-foreground">
           Select Exercises
         </label>
 
-        {!exercises || exercises.length === 0 ? (
+        {exercises.length === 0 ? (
           <div className="text-sm text-muted-foreground p-4 border border-border/30 rounded-md text-center">
-            No exercises available. Create some exercises first.
+            No exercises available.
           </div>
         ) : (
-          <div className="space-y-2 max-h-64 overflow-y-auto border border-border/30 rounded-md p-3">
+          <div className="space-y-2 border border-border/30 rounded-md p-3 max-h-64 overflow-y-auto">
             {exercises.map((exercise) => (
-              <label
+              <button
                 key={exercise.id}
-                className="flex items-start gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer transition-colors"
+                type="button"
+                onClick={() => toggleExercise(exercise.id)}
+                className="flex items-start gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors w-full text-left"
               >
                 <div className="shrink-0 pt-0.5">
-                  <input
-                    type="checkbox"
-                    checked={selectedExercises.includes(exercise.id)}
-                    onChange={() => toggleExercise(exercise.id)}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                  <div
+                    className={`h-4 w-4 rounded border-2 ${
+                      selectedExercises.includes(exercise.id)
+                        ? 'bg-primary border-primary'
+                        : 'border-border'
+                    }`}
                   />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -206,7 +121,7 @@ export default function AddWorkoutForm({
                     {exercise.unit} • {exercise.minReps}-{exercise.maxReps} reps
                   </div>
                 </div>
-              </label>
+              </button>
             ))}
           </div>
         )}
@@ -219,38 +134,158 @@ export default function AddWorkoutForm({
         )}
       </div>
 
-      <div className={`flex justify-end ${asModal ? '' : 'mt-4'}`}>
-        <form.AppForm>
-          <form.SubscribeButton
-            label={
-              addWorkoutMutation.isPending ? 'Creating...' : 'Create Workout'
-            }
+      {/* Actual form - ONLY contains form fields and submit */}
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="workout-name">Workout Name</Label>
+          <Input
+            id="workout-name"
+            type="text"
+            value={workoutName}
+            onChange={(e) => setWorkoutName(e.target.value)}
+            placeholder="e.g., Upper Body, Leg Day"
           />
-        </form.AppForm>
-      </div>
-    </form>
+        </div>
+
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            disabled={
+              addWorkoutMutation.isPending ||
+              !workoutName ||
+              selectedDays.length === 0 ||
+              selectedExercises.length === 0
+            }
+          >
+            {addWorkoutMutation.isPending ? 'Creating...' : 'Create Workout'}
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+interface AddWorkoutFormProps {
+  onSave?: () => void
+  asModal?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+export default function AddWorkoutForm({
+  onSave,
+  asModal = false,
+  onOpenChange,
+}: AddWorkoutFormProps) {
+  const addWorkoutMutation = useAddWorkout()
+  const { data: exercises = [] } = useExercises()
+
+  const [workoutName, setWorkoutName] = useState('')
+  const [selectedExercises, setSelectedExercises] = useState<number[]>([])
+  const [selectedDays, setSelectedDays] = useState<string[]>([])
+
+  const toggleExercise = useCallback((exerciseId: number) => {
+    setSelectedExercises((prev) =>
+      prev.includes(exerciseId)
+        ? prev.filter((id) => id !== exerciseId)
+        : [...prev, exerciseId],
+    )
+  }, [])
+
+  const toggleDay = useCallback((day: string) => {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+    )
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (
+      !workoutName ||
+      selectedDays.length === 0 ||
+      selectedExercises.length === 0
+    ) {
+      return
+    }
+
+    try {
+      await addWorkoutMutation.mutateAsync({
+        name: workoutName,
+        selectedDays,
+        exerciseIds: selectedExercises,
+      })
+
+      setWorkoutName('')
+      setSelectedExercises([])
+      setSelectedDays([])
+
+      onSave?.()
+      if (asModal) {
+        onOpenChange?.(false)
+      }
+    } catch (error) {
+      console.error('Error adding workout:', error)
+    }
+  }
+
+  const FormContentElement = (
+    <FormContent
+      selectedExercises={selectedExercises}
+      selectedDays={selectedDays}
+      toggleExercise={toggleExercise}
+      toggleDay={toggleDay}
+      exercises={exercises}
+      addWorkoutMutation={addWorkoutMutation}
+      workoutName={workoutName}
+      setWorkoutName={setWorkoutName}
+      onSubmit={handleSubmit}
+      asModal={asModal}
+    />
   )
 
   if (asModal) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create New Workout</DialogTitle>
-            <DialogDescription>
-              Add a new workout with exercises and schedule it for specific
-              days.
-            </DialogDescription>
-          </DialogHeader>
-          <FormContent />
-        </DialogContent>
-      </Dialog>
+      <>
+        {/* Custom modal backdrop */}
+        <div 
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              onOpenChange?.(false)
+            }
+          }}
+        >
+          {/* Modal content */}
+          <div className="bg-background rounded-lg shadow-lg max-w-lg w-full max-h-[80vh] overflow-hidden">
+            {/* Modal header */}
+            <div className="border-b px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">Create New Workout</h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Add a new workout with exercises and schedule it.
+                  </p>
+                </div>
+                <button
+                  onClick={() => onOpenChange?.(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            
+            {/* Modal body - scrollable */}
+            <div className="overflow-y-auto max-h-[calc(80vh-8rem)]">
+              <div className="p-6">
+                {FormContentElement}
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
     )
   }
 
-  return (
-    <div className="mx-auto mt-12 max-w-125">
-      <FormContent />
-    </div>
-  )
+  return <div className="mx-auto mt-12 max-w-125">{FormContentElement}</div>
 }

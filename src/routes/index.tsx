@@ -5,7 +5,6 @@ import { HomeLoadingSkeleton } from '@/components/ui/skeleton'
 
 export const Route = createFileRoute('/')({
   component: App,
-  // Remove loader - we'll use TanStack Query instead
 })
 
 function App() {
