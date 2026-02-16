@@ -1,32 +1,39 @@
-import { Link } from '@tanstack/react-router'
+import { PlusIcon } from 'lucide-react'
 import {
   Empty,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
-  // EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
 import { Button } from '@/components/ui/button'
 
-export default function EmptyOutline() {
+type EmptyOutlineProps = {
+  title?: string
+  description?: string
+  buttonText?: string
+  onClick?: () => void
+}
+
+export default function EmptyOutline({
+  title,
+  description,
+  buttonText,
+  onClick,
+}: EmptyOutlineProps) {
   return (
     <Empty className="border border-dashed">
       <EmptyHeader>
-        {/* <EmptyMedia variant="icon">
-          <IconCloud />
-        </EmptyMedia> */}
-        <EmptyTitle>No Planned Exercises</EmptyTitle>
+        <EmptyTitle>{title || 'No Planned Exercises'}</EmptyTitle>
         <EmptyDescription>
-          Add your first exercise to get started.
+          {description || 'Add your first exercise to get started.'}
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Link to="/add-exercise">
-          <Button variant="outline" size="sm">
-            Add new Exercise
-          </Button>
-        </Link>
+        <Button size="sm" onClick={onClick}>
+          <PlusIcon className="h-4 w-4" />
+          {buttonText || 'Add Your First Exercise'}
+        </Button>
       </EmptyContent>
     </Empty>
   )
