@@ -175,7 +175,7 @@ export const exerciseFormSchema = z.object({
 // Workout form schema
 export const workoutFormSchema = z.object({
   name: z.string().min(1, 'Workout name is required'),
-  scheduledDate: z.string().min(1, 'Date is required'),
+  selectedDays: z.array(z.string()).min(1, 'At least one day is required'),
   exerciseIds: z.array(z.number()).min(1, 'At least one exercise is required'),
 })
 
@@ -205,7 +205,7 @@ export const exerciseCreateSchema = z.object({
 // Workout create schema
 export const workoutCreateSchema = z.object({
   name: z.string().min(1),
-  scheduledDate: z.coerce.date(), // Convert string to Date
+  selectedDays: z.array(z.string()).min(1), // Array of day strings like ['Mon', 'Wed', 'Fri']
   exerciseIds: z.array(z.number()).min(1),
 })
 
