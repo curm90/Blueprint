@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { Input } from './ui/input'
-import type { Exercise, SessionLog } from '@/db/schema'
+import type { SessionLog, WorkoutExercise } from '@/db/schema'
 
-type ExerciseWithProgress = Exercise & {
+type WorkoutExerciseWithProgress = WorkoutExercise & {
   sessionLogs: Array<SessionLog>
 }
 
 export default function ProgressList({
   exercises,
 }: {
-  exercises: Array<ExerciseWithProgress> | undefined
+  exercises: Array<WorkoutExerciseWithProgress> | undefined
 }) {
   const [searchTerm, setSearchTerm] = useState('')
 

@@ -8,18 +8,16 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import { Button } from './ui/button'
-import type { Exercise } from '@/db/schema'
+import type { WorkoutExercise } from '@/db/schema'
 import { useAppForm } from '@/hooks/demo.form'
 import { addSessionLogServer } from '@/utils/exercise-log.server'
-import {
-  applyWeightProgressionServer,
-  calculateWeightProgressionServer,
-} from '@/utils/weight-progression.server'
 
 // Create a form-specific schema that matches our form structure exactly
 const sessionLogFormSchema = z.object({
+  weight: z.string().min(1, 'Weight is required'),
+  reps: z.string().min(1, 'Reps is required'),
   difficulty: z.enum(['easy', 'right', 'hard']),
-  notes: z.string(), // Required string for form compatibility
+  notes: z.string(),
 })
 
 const options = [
@@ -47,12 +45,12 @@ const options = [
 ]
 
 interface ExerciseLogProps {
-  exercise: Exercise
+  exercise: WorkoutExercise
   open: boolean
   onOpenChange: (open: boolean) => void
   onProgressionApplied?: (exerciseId: number) => void // Callback when weight is updated, pass exercise ID
   asInline?: boolean // If true, render inline instead of in a dialog
-  workoutId?: number // Optional workout ID to associate session logs with
+  workoutLogId?: number | null // Workout log ID for session logging
 }
 
 export default function ExerciseLog({
@@ -61,12 +59,14 @@ export default function ExerciseLog({
   onOpenChange,
   onProgressionApplied,
   asInline = false,
-  workoutId,
+  workoutLogId,
 }: ExerciseLogProps) {
   const [progressionResult, setProgressionResult] = useState<any>(null)
   const [showProgression, setShowProgression] = useState(false)
   const form = useAppForm({
     defaultValues: {
+      weight: exercise.currentWeight.toString() || '',
+      reps: exercise.minReps.toString() || '',
       difficulty: 'right' as 'easy' | 'right' | 'hard',
       notes: '',
     },
@@ -74,47 +74,95 @@ export default function ExerciseLog({
       onChange: sessionLogFormSchema, // Use onChange instead of onSubmit to avoid strict type checking
     },
     onSubmit: async ({ value }) => {
-      // Transform form data to match server expectations
-      const data = {
-        exerciseId: exercise.id,
-        workoutId, // Include workoutId if provided
-        difficulty: value.difficulty,
-        notes: value.notes || undefined, // Convert empty string to undefined for optional field
+      try {
+        // Save session data if we have a workoutLogId
+        if (workoutLogId) {
+          console.log('🟡 About to save session log with:', {
+            workoutExerciseId: exercise.id,
+            workoutLogId: workoutLogId,
+            weight: parseInt(value.weight),
+            reps: parseInt(value.reps),
+            difficulty: value.difficulty,
+            notes: value.notes || undefined,
+          })
+
+          await addSessionLogServer({
+            data: {
+              workoutExerciseId: exercise.id,
+              workoutLogId: workoutLogId,
+              weight: parseInt(value.weight),
+              reps: parseInt(value.reps),
+              difficulty: value.difficulty,
+              notes: value.notes || undefined,
+            },
+          })
+          console.log('🟢 Session logged successfully')
+        } else {
+          console.log('🔴 No workoutLogId - session not logged:', {
+            workoutExerciseId: exercise.id,
+            weight: parseInt(value.weight),
+            reps: parseInt(value.reps),
+            difficulty: value.difficulty,
+            notes: value.notes,
+          })
+        }
+
+        // Close the log form immediately after saving (unless inline)
+        if (!asInline) {
+          onOpenChange(false)
+        }
+
+        // Check for weight progression after logging
+        // Note: This checks if we should suggest weight changes after session logging
+        const shouldShowProgression =
+          value.difficulty === 'easy' ||
+          (value.difficulty === 'right' && Math.random() < 0.3) || // Show occasionally for 'right'
+          value.difficulty === 'hard'
+
+        if (shouldShowProgression) {
+          // TODO: Calculate actual progression based on session history
+          const mockProgression = {
+            currentWeight: parseInt(value.weight),
+            suggestedWeight:
+              value.difficulty === 'easy'
+                ? parseInt(value.weight) + 2.5
+                : value.difficulty === 'hard'
+                  ? Math.max(
+                      parseInt(value.weight) - 2.5,
+                      exercise.startingWeight || 0,
+                    )
+                  : parseInt(value.weight),
+            reason:
+              value.difficulty === 'easy'
+                ? 'Session felt easy - consider increasing weight'
+                : value.difficulty === 'hard'
+                  ? 'Session felt hard - consider decreasing weight'
+                  : 'Keep building consistency at this weight',
+          }
+          setProgressionResult(mockProgression)
+          setShowProgression(true)
+        }
+
+        // Call the progression applied callback to mark exercise complete
+        onProgressionApplied?.(exercise.id)
+
+        // Reset form
+        form.reset()
+      } catch (error) {
+        console.error('Failed to save session log:', error)
+        // Still mark as complete even if logging fails
+        onProgressionApplied?.(exercise.id)
       }
-
-      // Log the session
-      await addSessionLogServer({ data })
-
-      // Close the log form immediately after saving (unless inline)
-      if (!asInline) {
-        onOpenChange(false)
-      }
-
-      // Calculate weight progression based on this session
-      const progression = await calculateWeightProgressionServer({
-        data: { exerciseId: exercise.id },
-      })
-
-      // Show progression suggestion to user
-      setProgressionResult(progression)
-      setShowProgression(true)
-
-      // Reset form
-      form.reset()
     },
   })
 
   const handleApplyProgression = async () => {
-    if (progressionResult) {
-      await applyWeightProgressionServer({
-        data: { exerciseId: exercise.id },
-      })
-      onProgressionApplied?.(exercise.id) // Pass exercise ID to callback
-    }
-
-    // Close progression modal
+    // Close progression modal and mark as applied
     setShowProgression(false)
     setProgressionResult(null)
+
+    // TODO: In the future, actually apply the weight change to the workoutExercise
+    // For now, just close the modal
   }
 
   const handleDismissProgression = () => {
@@ -130,17 +178,29 @@ export default function ExerciseLog({
         form.handleSubmit()
       }}
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         {!asInline && <p className="font-medium">How did it go?</p>}
         {asInline && (
-          <div className="mb-3">
-            <h3 className="font-bold text-lg">{exercise.name}</h3>
-            <p className="text-sm text-muted-foreground">
+          <div className="mb-2">
+            <h3 className="font-bold text-base">{exercise.name}</h3>
+            <p className="text-xs text-muted-foreground">
               Target: {exercise.currentWeight}
               {exercise.unit} × {exercise.minReps}-{exercise.maxReps} reps
             </p>
           </div>
         )}
+
+        <div className="grid grid-cols-2 gap-3">
+          <form.AppField
+            name="weight"
+            children={(field) => <field.TextField label="Weight Used" />}
+          />
+
+          <form.AppField
+            name="reps"
+            children={(field) => <field.TextField label="Reps Completed" />}
+          />
+        </div>
 
         <form.AppField
           name="difficulty"
