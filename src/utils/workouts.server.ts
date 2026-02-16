@@ -2,11 +2,16 @@ import { createServerFn } from '@tanstack/react-start'
 import z from 'zod'
 import {
   addWorkout,
+  completeWorkoutSession,
   deleteWorkout,
+  getExerciseTemplates,
   getTodaysWorkouts,
   getWorkoutById,
+  getWorkoutExercisesWithProgress,
   getWorkouts,
+  isWorkoutCompletedToday,
   logWorkoutComplete,
+  startWorkoutSession,
   updateWorkout,
 } from './workouts.functions'
 import type { WorkoutCreate } from '@/db/schema'
@@ -63,4 +68,44 @@ export const logWorkoutCompleteServer = createServerFn({ method: 'POST' })
   )
   .handler(async ({ data }) => {
     return await logWorkoutComplete(data.workoutId, data.notes)
+  })
+
+export const getExerciseTemplatesServer = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  return await getExerciseTemplates()
+})
+
+export const isWorkoutCompletedTodayServer = createServerFn({ method: 'POST' })
+  .inputValidator(z.object({ workoutId: z.number() }))
+  .handler(async ({ data }) => {
+    return await isWorkoutCompletedToday(data.workoutId)
+  })
+
+export const getWorkoutExercisesWithProgressServer = createServerFn({
+  method: 'GET',
+}).handler(async () => {
+  return await getWorkoutExercisesWithProgress()
+})
+
+export const startWorkoutSessionServer = createServerFn({ method: 'POST' })
+  .inputValidator(
+    z.object({
+      workoutId: z.number(),
+      notes: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    return await startWorkoutSession(data.workoutId, data.notes)
+  })
+
+export const completeWorkoutSessionServer = createServerFn({ method: 'POST' })
+  .inputValidator(
+    z.object({
+      workoutLogId: z.number(),
+      notes: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    return await completeWorkoutSession(data.workoutLogId, data.notes)
   })

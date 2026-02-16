@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq, gte, lt } from 'drizzle-orm'
 import type { WorkoutCreate } from '@/db/schema'
 import { db } from '@/db'
 import {
@@ -19,15 +19,19 @@ export async function addWorkout(workout: WorkoutCreate) {
       })
       .returning()
 
-    // Add exercises to workout
-    if (workout.exerciseIds.length > 0) {
-      const workoutExerciseData = workout.exerciseIds.map(
-        (exerciseId, index) => ({
-          workoutId: workoutResult.id,
-          exerciseId,
-          order: index + 1,
-        }),
-      )
+    // Add exercises to workout - now with exercise data embedded
+    if (workout.exercises.length > 0) {
+      const workoutExerciseData = workout.exercises.map((exercise) => ({
+        workoutId: workoutResult.id,
+        name: exercise.name,
+        currentWeight: exercise.currentWeight,
+        startingWeight: exercise.startingWeight,
+        minReps: exercise.minReps,
+        maxReps: exercise.maxReps,
+        weightIncrement: exercise.weightIncrement || 2.5,
+        unit: exercise.unit,
+        order: exercise.order,
+      }))
 
       await db.insert(workoutExercises).values(workoutExerciseData)
     }
@@ -46,9 +50,6 @@ export async function getWorkouts() {
       with: {
         workoutExercises: {
           orderBy: (exercise: any) => exercise.order,
-          with: {
-            exercise: true,
-          },
         },
       },
       orderBy: desc(workouts.createdAt),
@@ -68,12 +69,16 @@ export async function getWorkoutById(workoutId: number) {
       with: {
         workoutExercises: {
           orderBy: (exercise: any) => exercise.order,
-          with: {
-            exercise: true,
-          },
         },
         workoutLogs: {
           orderBy: desc(workoutLogs.completedAt),
+          with: {
+            sessionLogs: {
+              with: {
+                workoutExercise: true,
+              },
+            },
+          },
         },
       },
     })
@@ -94,9 +99,6 @@ export async function getTodaysWorkouts() {
       with: {
         workoutExercises: {
           orderBy: (exercise: any) => exercise.order,
-          with: {
-            exercise: true,
-          },
         },
         workoutLogs: {
           orderBy: desc(workoutLogs.completedAt),
@@ -119,8 +121,17 @@ export async function getTodaysWorkouts() {
 
 export async function deleteWorkout(workoutId: number) {
   try {
-    // Delete session logs for this workout
-    await db.delete(sessionLog).where(eq(sessionLog.workoutId, workoutId))
+    // Get all workout exercises for this workout
+    const workoutExercisesList = await db.query.workoutExercises.findMany({
+      where: eq(workoutExercises.workoutId, workoutId),
+    })
+
+    // Delete session logs for all exercises in this workout
+    for (const workoutExercise of workoutExercisesList) {
+      await db
+        .delete(sessionLog)
+        .where(eq(sessionLog.workoutExerciseId, workoutExercise.id))
+    }
     console.log(`Deleted session logs for workout ${workoutId}`)
 
     // Delete workout logs
@@ -162,22 +173,26 @@ export async function updateWorkout(
         .where(eq(workouts.id, workoutId))
     }
 
-    // Update exercises if provided
-    if (updates.exerciseIds) {
+    // Update exercises if provided - now with exercise data embedded
+    if (updates.exercises) {
       // Delete existing workout exercises
       await db
         .delete(workoutExercises)
         .where(eq(workoutExercises.workoutId, workoutId))
 
       // Add new workout exercises
-      if (updates.exerciseIds.length > 0) {
-        const workoutExerciseData = updates.exerciseIds.map(
-          (exerciseId, index) => ({
-            workoutId,
-            exerciseId,
-            order: index + 1,
-          }),
-        )
+      if (updates.exercises.length > 0) {
+        const workoutExerciseData = updates.exercises.map((exercise) => ({
+          workoutId,
+          name: exercise.name,
+          currentWeight: exercise.currentWeight,
+          startingWeight: exercise.startingWeight,
+          minReps: exercise.minReps,
+          maxReps: exercise.maxReps,
+          weightIncrement: exercise.weightIncrement || 2.5,
+          unit: exercise.unit,
+          order: exercise.order,
+        }))
 
         await db.insert(workoutExercises).values(workoutExerciseData)
       }
@@ -202,5 +217,171 @@ export async function logWorkoutComplete(workoutId: number, notes?: string) {
   } catch (error) {
     console.error('Error logging workout completion:', error)
     throw new Error(`Failed to log workout completion: ${error}`)
+  }
+}
+
+// Start a workout session (creates workoutLog entry)
+export async function startWorkoutSession(workoutId: number, notes?: string) {
+  try {
+    const [workoutLogResult] = await db
+      .insert(workoutLogs)
+      .values({
+        workoutId,
+        notes: notes || `Started workout session`,
+      })
+      .returning()
+
+    console.log('Workout session started successfully:', { workoutLogResult })
+    return workoutLogResult
+  } catch (error) {
+    console.error('Error starting workout session:', error)
+    throw new Error(`Failed to start workout session: ${error}`)
+  }
+}
+
+// Update existing workout session as completed
+export async function completeWorkoutSession(
+  workoutLogId: number,
+  notes?: string,
+) {
+  try {
+    const [updatedLog] = await db
+      .update(workoutLogs)
+      .set({
+        notes: notes || 'Workout completed',
+        completedAt: new Date(),
+      })
+      .where(eq(workoutLogs.id, workoutLogId))
+      .returning()
+
+    console.log('Workout session completed successfully:', { updatedLog })
+    return updatedLog
+  } catch (error) {
+    console.error('Error completing workout session:', error)
+    throw new Error(`Failed to complete workout session: ${error}`)
+  }
+}
+
+// New function to get unique exercise templates for reuse
+export async function getExerciseTemplates() {
+  try {
+    const exercises = await db.query.workoutExercises.findMany({
+      orderBy: desc(workoutExercises.createdAt),
+    })
+
+    // Create a map to get unique exercises by name (keeping the most recent)
+    const uniqueExercises = new Map()
+
+    exercises.forEach((exercise) => {
+      const key = `${exercise.name}-${exercise.unit}`
+      if (!uniqueExercises.has(key)) {
+        uniqueExercises.set(key, {
+          name: exercise.name,
+          currentWeight: exercise.currentWeight,
+          startingWeight: exercise.startingWeight,
+          minReps: exercise.minReps,
+          maxReps: exercise.maxReps,
+          weightIncrement: exercise.weightIncrement,
+          unit: exercise.unit,
+        })
+      }
+    })
+
+    const templates = Array.from(uniqueExercises.values())
+    console.log('Exercise templates retrieved successfully:', { templates })
+    return templates
+  } catch (error) {
+    console.error('Error getting exercise templates:', error)
+    throw new Error(`Failed to get exercise templates: ${error}`)
+  }
+}
+
+// Check if a workout was completed today
+export async function isWorkoutCompletedToday(
+  workoutId: number,
+): Promise<boolean> {
+  try {
+    const today = new Date()
+    const startOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    )
+    const endOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() + 1,
+    )
+
+    const completionToday = await db
+      .select()
+      .from(workoutLogs)
+      .where(
+        and(
+          eq(workoutLogs.workoutId, workoutId),
+          gte(workoutLogs.completedAt, startOfDay),
+          lt(workoutLogs.completedAt, endOfDay),
+        ),
+      )
+      .limit(1)
+
+    return completionToday.length > 0
+  } catch (error) {
+    console.error('Error checking if workout was completed today:', error)
+    return false
+  }
+}
+
+// Get workout exercises with progress data (session logs)
+export async function getWorkoutExercisesWithProgress() {
+  try {
+    const exercises = await db.query.workoutExercises.findMany({
+      with: {
+        sessionLogs: {
+          orderBy: desc(sessionLog.loggedAt),
+        },
+      },
+      orderBy: desc(workoutExercises.createdAt),
+    })
+
+    // Group exercises by name to show combined progress
+    const exerciseMap = new Map()
+
+    exercises.forEach((exercise) => {
+      const key = exercise.name.toLowerCase()
+      if (!exerciseMap.has(key)) {
+        exerciseMap.set(key, {
+          ...exercise,
+          sessionLogs: exercise.sessionLogs,
+        })
+      } else {
+        // Merge session logs for exercises with the same name
+        const existing = exerciseMap.get(key)
+        existing.sessionLogs = [
+          ...existing.sessionLogs,
+          ...exercise.sessionLogs,
+        ]
+        // Update to latest exercise data if this one is newer
+        if (
+          exercise.createdAt &&
+          existing.createdAt &&
+          exercise.createdAt > existing.createdAt
+        ) {
+          exerciseMap.set(key, {
+            ...exercise,
+            sessionLogs: existing.sessionLogs,
+          })
+        }
+      }
+    })
+
+    const result = Array.from(exerciseMap.values())
+    console.log('Workout exercises with progress retrieved successfully:', {
+      count: result.length,
+    })
+    return result
+  } catch (error) {
+    console.error('Error getting workout exercises with progress:', error)
+    throw new Error(`Failed to get workout exercises with progress: ${error}`)
   }
 }

@@ -1,12 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { exerciseKeys } from './exercises.query'
 import type { WorkoutCreate } from '@/db/schema'
 import {
   addWorkoutServer,
+  completeWorkoutSessionServer,
   deleteWorkoutServer,
   getTodaysWorkoutsServer,
   getWorkoutByIdServer,
   getWorkoutsServer,
+  isWorkoutCompletedTodayServer,
   logWorkoutCompleteServer,
+  startWorkoutSessionServer,
   updateWorkoutServer,
 } from '@/utils/workouts.server'
 import { useToast } from '@/components/ui/toast'
@@ -17,6 +21,8 @@ export const workoutKeys = {
   workouts: () => [...workoutKeys.all, 'list'] as const,
   workout: (id: number) => [...workoutKeys.all, 'detail', id] as const,
   todaysWorkouts: () => [...workoutKeys.all, 'today'] as const,
+  workoutCompletedToday: (id: number) =>
+    [...workoutKeys.all, 'completed-today', id] as const,
 }
 
 // ============ QUERIES ============
@@ -55,6 +61,18 @@ export function useTodaysWorkouts() {
   })
 }
 
+/**
+ * Check if a workout was completed today
+ */
+export function useIsWorkoutCompletedToday(workoutId: number) {
+  return useQuery({
+    queryKey: workoutKeys.workoutCompletedToday(workoutId),
+    queryFn: () => isWorkoutCompletedTodayServer({ data: { workoutId } }),
+    staleTime: 30 * 1000, // 30 seconds
+    enabled: !!workoutId,
+  })
+}
+
 // ============ MUTATIONS ============
 
 /**
@@ -68,8 +86,9 @@ export function useAddWorkout() {
     mutationFn: (workoutData: WorkoutCreate) =>
       addWorkoutServer({ data: workoutData }),
     onSuccess: () => {
-      // Invalidate and refetch workout data
+      // Invalidate and refetch workout data and exercise templates
       queryClient.invalidateQueries({ queryKey: workoutKeys.all })
+      queryClient.invalidateQueries({ queryKey: exerciseKeys.all })
       toast({
         type: 'success',
         title: 'Workout Created',
@@ -103,8 +122,9 @@ export function useUpdateWorkout() {
       updates: Partial<WorkoutCreate>
     }) => updateWorkoutServer({ data: { id, updates } }),
     onSuccess: () => {
-      // Invalidate all workout-related queries
+      // Invalidate all workout-related queries and exercise templates
       queryClient.invalidateQueries({ queryKey: workoutKeys.all })
+      queryClient.invalidateQueries({ queryKey: exerciseKeys.all })
       toast({
         type: 'success',
         title: 'Workout Updated',
@@ -172,6 +192,7 @@ export function useDeleteWorkout() {
     onSettled: () => {
       // Always refetch after mutation settles
       queryClient.invalidateQueries({ queryKey: workoutKeys.all })
+      queryClient.invalidateQueries({ queryKey: exerciseKeys.all })
     },
   })
 }
@@ -186,9 +207,13 @@ export function useLogWorkoutComplete() {
   return useMutation({
     mutationFn: ({ workoutId, notes }: { workoutId: number; notes?: string }) =>
       logWorkoutCompleteServer({ data: { workoutId, notes } }),
-    onSuccess: () => {
+    onSuccess: (_, { workoutId }) => {
       // Invalidate workout-related queries to show completion status
       queryClient.invalidateQueries({ queryKey: workoutKeys.all })
+      // Also invalidate the specific workout completion status
+      queryClient.invalidateQueries({
+        queryKey: workoutKeys.workoutCompletedToday(workoutId),
+      })
       toast({
         type: 'success',
         title: 'Workout Complete!',
@@ -200,6 +225,66 @@ export function useLogWorkoutComplete() {
       toast({
         type: 'error',
         title: 'Failed to Log Completion',
+        description: 'Something went wrong. Please try again.',
+      })
+    },
+  })
+}
+
+/**
+ * Start a workout session
+ */
+export function useStartWorkoutSession() {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: ({ workoutId, notes }: { workoutId: number; notes?: string }) =>
+      startWorkoutSessionServer({ data: { workoutId, notes } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workoutKeys.all })
+    },
+    onError: (error) => {
+      console.error('Failed to start workout session:', error)
+      toast({
+        type: 'error',
+        title: 'Failed to Start Workout',
+        description: 'Something went wrong. Please try again.',
+      })
+    },
+  })
+}
+
+/**
+ * Complete a workout session
+ */
+export function useCompleteWorkoutSession() {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: ({
+      workoutLogId,
+      notes,
+    }: {
+      workoutLogId: number
+      notes?: string
+    }) => completeWorkoutSessionServer({ data: { workoutLogId, notes } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workoutKeys.all })
+      // Invalidate exercises with progress to show new session data
+      queryClient.invalidateQueries({ queryKey: exerciseKeys.all })
+      toast({
+        type: 'success',
+        title: 'Workout Complete!',
+        description: 'Great job finishing your workout!',
+      })
+    },
+    onError: (error) => {
+      console.error('Failed to complete workout session:', error)
+      toast({
+        type: 'error',
+        title: 'Failed to Complete Workout',
         description: 'Something went wrong. Please try again.',
       })
     },
