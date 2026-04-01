@@ -7,7 +7,7 @@ export const Route = createFileRoute('/workouts')({
 
 function RouteComponent() {
   return (
-    <div>
+    <div className='p-8 flex flex-col gap-16 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
       <CreateWorkoutForm />
     </div>
   )
