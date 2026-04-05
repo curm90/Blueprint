@@ -12,8 +12,15 @@ export default defineSchema({
 
   workouts: defineTable({
     title: v.string(),
-    weight: v.number(),
-    minReps: v.number(),
-    maxReps: v.number(),
+    selectedDays: v.array(v.string()), // ['monday', 'tuesday', etc.]
+    weightUnit: v.string(), // 'kg' or 'lbs'
+    exercises: v.array(
+      v.object({
+        exerciseTitle: v.string(),
+        weight: v.number(),
+        minReps: v.number(),
+        maxReps: v.number(),
+      }),
+    ),
   }),
 })
