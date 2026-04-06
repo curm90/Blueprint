@@ -2,7 +2,8 @@ import { convexQuery } from '@convex-dev/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { api } from 'convex/_generated/api'
-import { Edit, Plus, Trash } from 'lucide-react'
+import { Edit, Trash } from 'lucide-react'
+import { CreateWorkoutForm } from '~/components/CreateWorkoutForm'
 import PageTitle from '~/components/PageTitle'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader } from '~/components/ui/card'
@@ -27,10 +28,7 @@ function RouteComponent() {
     <div className='p-8 flex flex-col gap-16 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
       <div className='flex items-center justify-between'>
         <PageTitle title='Workouts' />
-        <Button>
-          <Plus />
-          Create Workout
-        </Button>
+        <CreateWorkoutForm />
       </div>
 
       {workouts.map((workout) => (

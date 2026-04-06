@@ -3,19 +3,21 @@ import { api } from 'convex/_generated/api'
 import { useMutation } from 'convex/react'
 import { useState } from 'react'
 import { Button } from '~/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '~/components/ui/card'
 import { Field, FieldError, FieldGroup, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Checkbox } from '~/components/ui/checkbox'
 import { exerciseSchema, formSchema } from '~/lib/schemas'
 import { DAYS_OF_WEEK } from '~/lib/constants'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from './ui/dialog'
+import { Plus } from 'lucide-react'
 
 export function CreateWorkoutForm() {
   const createWorkout = useMutation(api.workouts.addWorkout)
@@ -93,23 +95,28 @@ export function CreateWorkoutForm() {
   }
 
   return (
-    <Card className='w-full max-w-2xl'>
-      <CardHeader>
-        <CardTitle>Create Workout</CardTitle>
-        <CardDescription>
-          Fill out the form to create a new workout with multiple exercises.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form
-          id='workout-form'
-          onSubmit={(e) => {
-            e.preventDefault()
-            form.handleSubmit()
-          }}
-        >
+    <Dialog>
+      <form
+        id='workout-form'
+        onSubmit={(e) => {
+          e.preventDefault()
+          form.handleSubmit()
+        }}
+      >
+        <DialogTrigger asChild>
+          <Button>
+            <Plus />
+            Create Workout
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Workout</DialogTitle>
+            <DialogDescription>
+              Fill out the form to create a new workout with multiple exercises.
+            </DialogDescription>
+          </DialogHeader>
           <FieldGroup className='space-y-6'>
-            {/* Workout Title */}
             <form.Field
               name='title'
               children={(field) => {
@@ -329,25 +336,26 @@ export function CreateWorkoutForm() {
               </div>
             )}
           </FieldGroup>
-        </form>
-      </CardContent>
-      <CardFooter>
-        <Field orientation='horizontal'>
-          <Button
-            type='button'
-            variant='outline'
-            onClick={() => {
-              form.reset()
-              setExercises([])
-            }}
-          >
-            Reset
-          </Button>
-          <Button type='submit' form='workout-form' disabled={exercises.length === 0}>
-            Create Workout ({exercises.length} exercise{exercises.length !== 1 ? 's' : ''})
-          </Button>
-        </Field>
-      </CardFooter>
-    </Card>
+
+          <DialogFooter>
+            <Field orientation='horizontal'>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => {
+                  form.reset()
+                  setExercises([])
+                }}
+              >
+                Reset
+              </Button>
+              <Button type='submit' form='workout-form' disabled={exercises.length === 0}>
+                Create Workout ({exercises.length} exercise{exercises.length !== 1 ? 's' : ''})
+              </Button>
+            </Field>
+          </DialogFooter>
+        </DialogContent>
+      </form>
+    </Dialog>
   )
 }
