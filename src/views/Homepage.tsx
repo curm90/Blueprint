@@ -5,7 +5,7 @@ import { Calendar, Folder } from 'lucide-react'
 import { EmptyUI } from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'
 import { Button } from '~/components/ui/button'
-import { Card, CardAction, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
+import { Card, CardAction, CardContent, CardHeader } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
 
 export default function Homepage() {
