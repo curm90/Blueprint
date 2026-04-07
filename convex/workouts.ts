@@ -52,3 +52,27 @@ export const deleteWorkoutById = mutation({
     await ctx.db.delete('workouts', id)
   },
 })
+
+export const editWorkoutById = mutation({
+  args: {
+    id: v.id('workouts'),
+    updates: v.object({
+      title: v.string(),
+      selectedDays: v.array(v.string()),
+      weightUnit: v.string(),
+      exercises: v.array(
+        v.object({
+          exerciseTitle: v.string(),
+          weight: v.number(),
+          minReps: v.number(),
+          maxReps: v.number(),
+        }),
+      ),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const { id, updates } = args
+
+    await ctx.db.patch('workouts', id, updates)
+  },
+})

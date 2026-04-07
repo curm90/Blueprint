@@ -2,7 +2,7 @@ import { useForm } from '@tanstack/react-form'
 import { api } from 'convex/_generated/api'
 import { useMutation } from 'convex/react'
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Edit } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Field, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
@@ -18,10 +18,27 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog'
+import type { Id } from 'convex/_generated/dataModel'
 
-export function CreateWorkoutForm() {
+type WorkoutData = {
+  title: string
+  selectedDays: string[]
+  weightUnit: string
+  exercises: Exercise[]
+}
+
+type WorkoutFormProps = {
+  mode: 'create' | 'edit'
+  workoutId?: Id<'workouts'>
+  initialData?: WorkoutData
+  children: React.ReactNode
+}
+
+export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutFormProps) {
   const createWorkout = useMutation(api.workouts.addWorkout)
-  const [exercises, setExercises] = useState<Exercise[]>([])
+  const updateWorkout = useMutation(api.workouts.editWorkoutById)
+
+  const [exercises, setExercises] = useState<Exercise[]>(initialData?.exercises || [])
   const [isOpen, setIsOpen] = useState(false)
   const [exerciseFormErrors, setExerciseFormErrors] = useState<{
     exerciseTitle?: string[]
@@ -30,11 +47,13 @@ export function CreateWorkoutForm() {
     maxReps?: string[]
   }>({})
 
+  const isEditMode = mode === 'edit'
+
   const form = useForm({
     defaultValues: {
-      title: '',
-      selectedDays: [] as string[],
-      weightUnit: 'kg',
+      title: initialData?.title || '',
+      selectedDays: initialData?.selectedDays || ([] as string[]),
+      weightUnit: initialData?.weightUnit || 'kg',
       exerciseTitle: '',
       weight: '',
       minReps: '',
@@ -51,7 +70,7 @@ export function CreateWorkoutForm() {
         // Validate that at least one exercise is added
         if (exercises.length === 0) {
           return {
-            form: 'Please add at least one exercise before creating the workout.',
+            form: `Please add at least one exercise before ${isEditMode ? 'updating' : 'creating'} the workout.`,
           }
         }
 
@@ -59,16 +78,28 @@ export function CreateWorkoutForm() {
       },
     },
     onSubmit: async ({ value }) => {
-      await createWorkout({
-        title: value.title,
-        selectedDays: value.selectedDays,
-        weightUnit: value.weightUnit,
-        exercises,
-      })
+      if (isEditMode && workoutId) {
+        await updateWorkout({
+          id: workoutId,
+          updates: {
+            title: value.title,
+            selectedDays: value.selectedDays,
+            weightUnit: value.weightUnit,
+            exercises,
+          },
+        })
+      } else {
+        await createWorkout({
+          title: value.title,
+          selectedDays: value.selectedDays,
+          weightUnit: value.weightUnit,
+          exercises,
+        })
+      }
 
       // Reset form and exercises
       form.reset()
-      setExercises([])
+      setExercises(initialData?.exercises || [])
       setExerciseFormErrors({})
       setIsOpen(false)
     },
@@ -122,7 +153,7 @@ export function CreateWorkoutForm() {
 
   const handleDialogClose = () => {
     form.reset()
-    setExercises([])
+    setExercises(initialData?.exercises || [])
     setExerciseFormErrors({})
   }
 
@@ -135,12 +166,7 @@ export function CreateWorkoutForm() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
-      <DialogTrigger asChild>
-        <Button onClick={() => setIsOpen(true)}>
-          <Plus />
-          Create Workout
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className='w-full p-6 sm:max-w-xl max-h-[90vh] overflow-y-auto'>
         <form
           onSubmit={(e) => {
@@ -149,8 +175,14 @@ export function CreateWorkoutForm() {
           }}
         >
           <DialogHeader className='flex flex-col gap-0'>
-            <DialogTitle className='text-xl'>Create New Workout</DialogTitle>
-            <DialogDescription>Enter your workout details and add exercises</DialogDescription>
+            <DialogTitle className='text-xl'>
+              {isEditMode ? 'Edit Workout' : 'Create New Workout'}
+            </DialogTitle>
+            <DialogDescription>
+              {isEditMode
+                ? 'Update your workout details and exercises'
+                : 'Enter your workout details and add exercises'}
+            </DialogDescription>
           </DialogHeader>
           <div className='space-y-6 mt-6'>
             {/* Basic Workout Info - 2 per row layout */}
@@ -414,10 +446,39 @@ export function CreateWorkoutForm() {
             }}
           />
           <Button type='submit' disabled={exercises.length === 0} className='w-full mt-6'>
-            Create Workout ({exercises.length} exercise{exercises.length !== 1 ? 's' : ''})
+            {isEditMode ? 'Update' : 'Create'} Workout ({exercises.length} exercise
+            {exercises.length !== 1 ? 's' : ''})
           </Button>
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+// Backward compatibility wrapper for create mode
+export function CreateWorkoutForm() {
+  return (
+    <WorkoutForm mode='create'>
+      <Button>
+        <Plus />
+        Create Workout
+      </Button>
+    </WorkoutForm>
+  )
+}
+
+// Edit wrapper component
+type EditWorkoutFormProps = {
+  workoutId: Id<'workouts'>
+  initialData: WorkoutData
+}
+
+export function EditWorkoutForm({ workoutId, initialData }: EditWorkoutFormProps) {
+  return (
+    <WorkoutForm mode='edit' workoutId={workoutId} initialData={initialData}>
+      <Button variant='outline'>
+        <Edit />
+      </Button>
+    </WorkoutForm>
   )
 }
