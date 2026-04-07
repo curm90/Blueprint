@@ -66,7 +66,6 @@ export default function Homepage() {
             <EmptyUI
               title='No Workouts Scheduled for Today'
               description="It looks like you don't have any workouts planned for today. Let's get moving and add a workout to your schedule!"
-              buttonText='Create Workout'
               icon={<Folder />}
             />
           </CardContent>
