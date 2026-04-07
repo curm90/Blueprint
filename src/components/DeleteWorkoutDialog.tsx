@@ -21,12 +21,12 @@ export default function DeleteWorkoutDialog({ workoutId }: { workoutId: Id<'work
           <Trash />
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className='flex flex-col gap-1'>
         <h2 className='text-lg font-semibold'>Delete Workout</h2>
-        <p className='text-sm text-muted-foreground mt-2'>
+        <p className='text-sm text-muted-foreground'>
           Are you sure you want to delete this workout?
         </p>
-        <div className='flex items-center justify-end gap-4 mt-6'>
+        <div className='flex items-center justify-end gap-2 mt-6'>
           <Button variant='outline' onClick={() => setIsOpen(false)}>
             Cancel
           </Button>

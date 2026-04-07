@@ -23,6 +23,12 @@ export function CreateWorkoutForm() {
   const createWorkout = useMutation(api.workouts.addWorkout)
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [isOpen, setIsOpen] = useState(false)
+  const [exerciseFormErrors, setExerciseFormErrors] = useState<{
+    exerciseTitle?: string[]
+    weight?: string[]
+    minReps?: string[]
+    maxReps?: string[]
+  }>({})
 
   const form = useForm({
     defaultValues: {
@@ -35,14 +41,24 @@ export function CreateWorkoutForm() {
       maxReps: '',
     },
     validators: {
-      onSubmit: formSchema,
+      onSubmit: ({ value }) => {
+        // Validate basic workout info
+        const basicValidation = formSchema.safeParse(value)
+        if (!basicValidation.success) {
+          return basicValidation.error.format()
+        }
+
+        // Validate that at least one exercise is added
+        if (exercises.length === 0) {
+          return {
+            form: 'Please add at least one exercise before creating the workout.',
+          }
+        }
+
+        return undefined
+      },
     },
     onSubmit: async ({ value }) => {
-      if (exercises.length === 0) {
-        alert('Please add at least one exercise')
-        return
-      }
-
       await createWorkout({
         title: value.title,
         selectedDays: value.selectedDays,
@@ -53,6 +69,7 @@ export function CreateWorkoutForm() {
       // Reset form and exercises
       form.reset()
       setExercises([])
+      setExerciseFormErrors({})
       setIsOpen(false)
     },
   })
@@ -66,14 +83,22 @@ export function CreateWorkoutForm() {
     }
 
     // Validate exercise data
-    const validation = exerciseSchema.safeParse({
-      ...exerciseValues,
-    })
+    const validation = exerciseSchema.safeParse(exerciseValues)
 
     if (!validation.success) {
-      alert('Please fill in all exercise fields correctly')
+      // Set field-specific errors
+      const errorsByField = validation.error.format()
+      setExerciseFormErrors({
+        exerciseTitle: errorsByField.exerciseTitle?._errors,
+        weight: errorsByField.weight?._errors,
+        minReps: errorsByField.minReps?._errors,
+        maxReps: errorsByField.maxReps?._errors,
+      })
       return
     }
+
+    // Clear any previous errors
+    setExerciseFormErrors({})
 
     const newExercise: Exercise = {
       exerciseTitle: exerciseValues.exerciseTitle,
@@ -98,6 +123,7 @@ export function CreateWorkoutForm() {
   const handleDialogClose = () => {
     form.reset()
     setExercises([])
+    setExerciseFormErrors({})
   }
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -210,21 +236,38 @@ export function CreateWorkoutForm() {
                 <form.Field
                   name='exerciseTitle'
                   children={(field) => {
-                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                    const hasError =
+                      exerciseFormErrors.exerciseTitle &&
+                      exerciseFormErrors.exerciseTitle.length > 0
                     return (
-                      <Field data-invalid={isInvalid}>
+                      <Field data-invalid={hasError}>
                         <FieldLabel htmlFor={field.name}>Exercise Name</FieldLabel>
                         <Input
                           id={field.name}
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value)
+                            // Clear error when user starts typing
+                            if (exerciseFormErrors.exerciseTitle) {
+                              setExerciseFormErrors((prev) => ({
+                                ...prev,
+                                exerciseTitle: undefined,
+                              }))
+                            }
+                          }}
+                          aria-invalid={hasError}
                           placeholder='E.g. Bench Press'
                           autoComplete='off'
                         />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        {hasError && (
+                          <FieldError
+                            errors={exerciseFormErrors.exerciseTitle?.map((err) => ({
+                              message: err,
+                            }))}
+                          />
+                        )}
                       </Field>
                     )
                   }}
@@ -232,9 +275,10 @@ export function CreateWorkoutForm() {
                 <form.Field
                   name='weight'
                   children={(field) => {
-                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                    const hasError =
+                      exerciseFormErrors.weight && exerciseFormErrors.weight.length > 0
                     return (
-                      <Field data-invalid={isInvalid}>
+                      <Field data-invalid={hasError}>
                         <FieldLabel htmlFor={field.name}>
                           Weight ({form.getFieldValue('weightUnit')})
                         </FieldLabel>
@@ -245,12 +289,22 @@ export function CreateWorkoutForm() {
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value)
+                            // Clear error when user starts typing
+                            if (exerciseFormErrors.weight) {
+                              setExerciseFormErrors((prev) => ({ ...prev, weight: undefined }))
+                            }
+                          }}
+                          aria-invalid={hasError}
                           placeholder='E.g. 60'
                           autoComplete='off'
                         />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        {hasError && (
+                          <FieldError
+                            errors={exerciseFormErrors.weight?.map((err) => ({ message: err }))}
+                          />
+                        )}
                       </Field>
                     )
                   }}
@@ -258,9 +312,10 @@ export function CreateWorkoutForm() {
                 <form.Field
                   name='minReps'
                   children={(field) => {
-                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                    const hasError =
+                      exerciseFormErrors.minReps && exerciseFormErrors.minReps.length > 0
                     return (
-                      <Field data-invalid={isInvalid}>
+                      <Field data-invalid={hasError}>
                         <FieldLabel htmlFor={field.name}>Min Reps</FieldLabel>
                         <Input
                           type='number'
@@ -269,12 +324,22 @@ export function CreateWorkoutForm() {
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value)
+                            // Clear error when user starts typing
+                            if (exerciseFormErrors.minReps) {
+                              setExerciseFormErrors((prev) => ({ ...prev, minReps: undefined }))
+                            }
+                          }}
+                          aria-invalid={hasError}
                           placeholder='E.g. 8'
                           autoComplete='off'
                         />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        {hasError && (
+                          <FieldError
+                            errors={exerciseFormErrors.minReps?.map((err) => ({ message: err }))}
+                          />
+                        )}
                       </Field>
                     )
                   }}
@@ -282,9 +347,10 @@ export function CreateWorkoutForm() {
                 <form.Field
                   name='maxReps'
                   children={(field) => {
-                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                    const hasError =
+                      exerciseFormErrors.maxReps && exerciseFormErrors.maxReps.length > 0
                     return (
-                      <Field data-invalid={isInvalid}>
+                      <Field data-invalid={hasError}>
                         <FieldLabel htmlFor={field.name}>Max Reps</FieldLabel>
                         <Input
                           type='number'
@@ -293,12 +359,22 @@ export function CreateWorkoutForm() {
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value)
+                            // Clear error when user starts typing
+                            if (exerciseFormErrors.maxReps) {
+                              setExerciseFormErrors((prev) => ({ ...prev, maxReps: undefined }))
+                            }
+                          }}
+                          aria-invalid={hasError}
                           placeholder='E.g. 12'
                           autoComplete='off'
                         />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        {hasError && (
+                          <FieldError
+                            errors={exerciseFormErrors.maxReps?.map((err) => ({ message: err }))}
+                          />
+                        )}
                       </Field>
                     )
                   }}
@@ -323,6 +399,20 @@ export function CreateWorkoutForm() {
               )}
             </div>
           </div>
+          {/* Form-level error for missing exercises */}
+          <form.Subscribe
+            selector={(state) => [state.errors]}
+            children={([errors]) => {
+              const formError = errors?.find(
+                (error) => typeof error === 'object' && 'form' in error,
+              )
+              return formError && 'form' in formError ? (
+                <div className='mt-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md'>
+                  {formError.form as string}
+                </div>
+              ) : null
+            }}
+          />
           <Button type='submit' disabled={exercises.length === 0} className='w-full mt-6'>
             Create Workout ({exercises.length} exercise{exercises.length !== 1 ? 's' : ''})
           </Button>
