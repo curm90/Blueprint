@@ -2,22 +2,22 @@ import { useForm } from '@tanstack/react-form'
 import { api } from 'convex/_generated/api'
 import { useMutation } from 'convex/react'
 import { useState } from 'react'
+import { Plus } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Field, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Checkbox } from '~/components/ui/checkbox'
+import AddedExerciseList from './AddedExerciseList'
 import { exerciseSchema, formSchema } from '~/lib/schemas'
 import { DAYS_OF_WEEK } from '~/lib/constants'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog'
-import { Plus, X } from 'lucide-react'
 
 export function CreateWorkoutForm() {
   const createWorkout = useMutation(api.workouts.addWorkout)
@@ -314,40 +314,18 @@ export function CreateWorkoutForm() {
                   <h4 className='text-sm font-medium mb-3 text-gray-600'>
                     Added Exercises ({exercises.length})
                   </h4>
-                  <div className='space-y-2 max-h-48 overflow-y-auto'>
-                    {exercises.map((exercise, index) => (
-                      <div
-                        key={index}
-                        className='flex items-center justify-between p-3 border rounded-md bg-gray-50'
-                      >
-                        <div className='flex-1'>
-                          <p className='font-medium text-sm'>{exercise.exerciseTitle}</p>
-                          <p className='text-xs text-gray-600'>
-                            {exercise.weight} {form.getFieldValue('weightUnit')} •{' '}
-                            {exercise.minReps}-{exercise.maxReps} reps
-                          </p>
-                        </div>
-                        <Button
-                          type='button'
-                          onClick={() => removeExercise(index)}
-                          variant='outline'
-                          size='sm'
-                        >
-                          <X className='w-4 h-4' />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+                  <AddedExerciseList
+                    exercises={exercises}
+                    removeExercise={removeExercise}
+                    weightUnit={form.getFieldValue('weightUnit')}
+                  />
                 </div>
               )}
             </div>
           </div>
-
-          {/* <DialogFooter className='mt-6'> */}
           <Button type='submit' disabled={exercises.length === 0} className='w-full mt-6'>
             Create Workout ({exercises.length} exercise{exercises.length !== 1 ? 's' : ''})
           </Button>
-          {/* </DialogFooter> */}
         </form>
       </DialogContent>
     </Dialog>
