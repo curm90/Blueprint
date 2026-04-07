@@ -3,23 +3,27 @@ import { api } from 'convex/_generated/api'
 import { useMutation } from 'convex/react'
 import { useState } from 'react'
 import { Button } from '~/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '~/components/ui/card'
-import { Field, FieldError, FieldGroup, FieldLabel } from '~/components/ui/field'
+import { Field, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Checkbox } from '~/components/ui/checkbox'
 import { exerciseSchema, formSchema } from '~/lib/schemas'
 import { DAYS_OF_WEEK } from '~/lib/constants'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from './ui/dialog'
+import { Plus, ArrowLeft, ArrowRight } from 'lucide-react'
 
 export function CreateWorkoutForm() {
   const createWorkout = useMutation(api.workouts.addWorkout)
   const [exercises, setExercises] = useState<Exercise[]>([])
+  const [currentStage, setCurrentStage] = useState<'basic' | 'exercises'>('basic')
+  const [isOpen, setIsOpen] = useState(false)
 
   const form = useForm({
     defaultValues: {
@@ -40,17 +44,18 @@ export function CreateWorkoutForm() {
         return
       }
 
-      console.log({ value, exercises })
       await createWorkout({
         title: value.title,
         selectedDays: value.selectedDays,
         weightUnit: value.weightUnit,
-        exercises: exercises,
+        exercises,
       })
 
       // Reset form and exercises
       form.reset()
       setExercises([])
+      setCurrentStage('basic')
+      setIsOpen(false) // Close the dialog
     },
   })
 
@@ -92,113 +97,81 @@ export function CreateWorkoutForm() {
     setExercises(exercises.filter((_, i) => i !== index))
   }
 
+  const validateBasicInfo = () => {
+    const title = form.getFieldValue('title')
+    const selectedDays = form.getFieldValue('selectedDays')
+
+    if (!title.trim()) {
+      alert('Please enter a workout title')
+      return false
+    }
+
+    if (selectedDays.length === 0) {
+      alert('Please select at least one day')
+      return false
+    }
+
+    return true
+  }
+
+  const goToNextStage = () => {
+    if (validateBasicInfo()) {
+      setCurrentStage('exercises')
+    }
+  }
+
+  const goToPreviousStage = () => {
+    setCurrentStage('basic')
+  }
+
+  const handleDialogClose = () => {
+    setCurrentStage('basic')
+    form.reset()
+    setExercises([])
+  }
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setIsOpen(open)
+    if (!open) {
+      handleDialogClose()
+    }
+  }
+
   return (
-    <Card className='w-full max-w-2xl'>
-      <CardHeader>
-        <CardTitle>Create Workout</CardTitle>
-        <CardDescription>
-          Fill out the form to create a new workout with multiple exercises.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
+      <DialogTrigger asChild>
+        <Button onClick={() => setIsOpen(true)}>
+          <Plus />
+          Create Workout
+        </Button>
+      </DialogTrigger>
+      <DialogContent className='w-full p-6 sm:max-w-120'>
         <form
-          id='workout-form'
           onSubmit={(e) => {
             e.preventDefault()
             form.handleSubmit()
           }}
         >
-          <FieldGroup className='space-y-6'>
-            {/* Workout Title */}
-            <form.Field
-              name='title'
-              children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Workout Title</FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      placeholder='E.g. Upper Body Push Day'
-                      autoComplete='off'
-                    />
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                  </Field>
-                )
-              }}
-            />
-
-            {/* Selected Days */}
-            <form.Field
-              name='selectedDays'
-              children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel>Selected Days</FieldLabel>
-                    <div className='grid grid-cols-2 md:grid-cols-4 gap-2 mt-2'>
-                      {DAYS_OF_WEEK.map((day) => (
-                        <Checkbox
-                          key={day.value}
-                          label={day.label}
-                          checked={field.state.value.includes(day.value)}
-                          onChange={(e) => {
-                            const isChecked = e.target.checked
-                            const currentDays = field.state.value
-                            if (isChecked) {
-                              field.handleChange([...currentDays, day.value])
-                            } else {
-                              field.handleChange(currentDays.filter((d) => d !== day.value))
-                            }
-                          }}
-                        />
-                      ))}
-                    </div>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                  </Field>
-                )
-              }}
-            />
-
-            {/* Weight Unit */}
-            <form.Field
-              name='weightUnit'
-              children={(field) => {
-                return (
-                  <Field>
-                    <FieldLabel htmlFor={field.name}>Weight Unit</FieldLabel>
-                    <select
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      className='flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500'
-                    >
-                      <option value='kg'>Kilograms (kg)</option>
-                      <option value='lbs'>Pounds (lbs)</option>
-                    </select>
-                  </Field>
-                )
-              }}
-            />
-
-            {/* Exercise Section */}
-            <div className='border-t pt-6'>
-              <h3 className='text-lg font-medium mb-4'>Add Exercise</h3>
-
-              {/* Exercise Title (Full width) */}
+          <DialogHeader className='flex flex-col gap-0'>
+            <DialogTitle className='text-xl'>
+              {currentStage === 'basic' ? 'Workout Details' : 'Add Exercises'}
+            </DialogTitle>
+            <DialogDescription>
+              {currentStage === 'basic'
+                ? 'Enter your workout details to get started'
+                : `Add exercises to "${form.getFieldValue('title')}"`}
+            </DialogDescription>
+          </DialogHeader>
+          {currentStage === 'basic' ? (
+            <div className='space-y-6 mt-6'>
+              {/* Stage 1: Basic Info */}
               <form.Field
-                name='exerciseTitle'
+                name='title'
                 children={(field) => {
                   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
                   return (
-                    <Field data-invalid={isInvalid} className='mb-4'>
-                      <FieldLabel htmlFor={field.name}>Exercise Name</FieldLabel>
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>Workout Title</FieldLabel>
                       <Input
                         id={field.name}
                         name={field.name}
@@ -206,7 +179,7 @@ export function CreateWorkoutForm() {
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
                         aria-invalid={isInvalid}
-                        placeholder='E.g. Bench Press'
+                        placeholder='E.g. Upper Body Push Day'
                         autoComplete='off'
                       />
                       {isInvalid && <FieldError errors={field.state.meta.errors} />}
@@ -215,139 +188,232 @@ export function CreateWorkoutForm() {
                 }}
               />
 
-              {/* Two column layout for weight and reps */}
-              <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                <form.Field
-                  name='weight'
-                  children={(field) => {
-                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          Weight ({form.getFieldValue('weightUnit')})
-                        </FieldLabel>
-                        <Input
-                          type='number'
-                          step='0.5'
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
-                          placeholder='E.g. 60'
-                          autoComplete='off'
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    )
-                  }}
-                />
-                <form.Field
-                  name='minReps'
-                  children={(field) => {
-                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Min Reps</FieldLabel>
-                        <Input
-                          type='number'
-                          min='1'
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
-                          placeholder='E.g. 8'
-                          autoComplete='off'
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    )
-                  }}
-                />
-                <form.Field
-                  name='maxReps'
-                  children={(field) => {
-                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Max Reps</FieldLabel>
-                        <Input
-                          type='number'
-                          min='1'
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
-                          placeholder='E.g. 12'
-                          autoComplete='off'
-                        />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                      </Field>
-                    )
-                  }}
-                />
-              </div>
-
-              <Button type='button' onClick={addExercise} className='mt-4' variant='outline'>
-                + Add Exercise
-              </Button>
-            </div>
-
-            {/* Exercise List */}
-            {exercises.length > 0 && (
-              <div className='border-t pt-6'>
-                <h3 className='text-lg font-medium mb-4'>Added Exercises ({exercises.length})</h3>
-                <div className='space-y-3'>
-                  {exercises.map((exercise, index) => (
-                    <div
-                      key={index}
-                      className='flex items-center justify-between p-3 border rounded-md bg-gray-50'
-                    >
-                      <div>
-                        <p className='font-medium'>{exercise.exerciseTitle}</p>
-                        <p className='text-sm text-gray-600'>
-                          {exercise.weight} {form.getFieldValue('weightUnit')} • {exercise.minReps}-
-                          {exercise.maxReps} reps
-                        </p>
+              {/* Selected Days */}
+              <form.Field
+                name='selectedDays'
+                children={(field) => {
+                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel>Selected Days</FieldLabel>
+                      <div className='grid grid-cols-2 md:grid-cols-4 gap-2 mt-2'>
+                        {DAYS_OF_WEEK.map((day) => (
+                          <Checkbox
+                            key={day.value}
+                            label={day.label}
+                            checked={field.state.value.includes(day.value)}
+                            onChange={(e) => {
+                              const isChecked = e.target.checked
+                              const currentDays = field.state.value
+                              if (isChecked) {
+                                field.handleChange([...currentDays, day.value])
+                              } else {
+                                field.handleChange(currentDays.filter((d) => d !== day.value))
+                              }
+                            }}
+                          />
+                        ))}
                       </div>
-                      <Button
-                        type='button'
-                        onClick={() => removeExercise(index)}
-                        variant='outline'
-                        size='sm'
+                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    </Field>
+                  )
+                }}
+              />
+
+              {/* Weight Unit */}
+              <form.Field
+                name='weightUnit'
+                children={(field) => {
+                  return (
+                    <Field>
+                      <FieldLabel htmlFor={field.name}>Weight Unit</FieldLabel>
+                      <select
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        className='flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500'
                       >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
+                        <option value='kg'>Kilograms (kg)</option>
+                        <option value='lbs'>Pounds (lbs)</option>
+                      </select>
+                    </Field>
+                  )
+                }}
+              />
+            </div>
+          ) : (
+            <div className='space-y-6 mt-6'>
+              {/* Stage 2: Exercises */}
+              <div className='space-y-4'>
+                {/* Exercise Title */}
+                <form.Field
+                  name='exerciseTitle'
+                  children={(field) => {
+                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={field.name}>Exercise Name</FieldLabel>
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          aria-invalid={isInvalid}
+                          placeholder='E.g. Bench Press'
+                          autoComplete='off'
+                        />
+                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      </Field>
+                    )
+                  }}
+                />
+
+                {/* Exercise Details Grid */}
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                  <form.Field
+                    name='weight'
+                    children={(field) => {
+                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>
+                            Weight ({form.getFieldValue('weightUnit')})
+                          </FieldLabel>
+                          <Input
+                            type='number'
+                            step='0.5'
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            aria-invalid={isInvalid}
+                            placeholder='E.g. 60'
+                            autoComplete='off'
+                          />
+                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        </Field>
+                      )
+                    }}
+                  />
+                  <form.Field
+                    name='minReps'
+                    children={(field) => {
+                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>Min Reps</FieldLabel>
+                          <Input
+                            type='number'
+                            min='1'
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            aria-invalid={isInvalid}
+                            placeholder='E.g. 8'
+                            autoComplete='off'
+                          />
+                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        </Field>
+                      )
+                    }}
+                  />
+                  <form.Field
+                    name='maxReps'
+                    children={(field) => {
+                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>Max Reps</FieldLabel>
+                          <Input
+                            type='number'
+                            min='1'
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            aria-invalid={isInvalid}
+                            placeholder='E.g. 12'
+                            autoComplete='off'
+                          />
+                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        </Field>
+                      )
+                    }}
+                  />
                 </div>
+
+                <Button type='button' onClick={addExercise} className='w-full' variant='outline'>
+                  <Plus className='w-4 h-4 mr-2' />
+                  Add Exercise
+                </Button>
               </div>
+
+              {/* Exercise List */}
+              {exercises.length > 0 && (
+                <div className='border-t pt-4'>
+                  <h4 className='text-sm font-medium mb-3 text-gray-600'>
+                    Added Exercises ({exercises.length})
+                  </h4>
+                  <div className='space-y-2 max-h-48 overflow-y-auto'>
+                    {exercises.map((exercise, index) => (
+                      <div
+                        key={index}
+                        className='flex items-center justify-between p-3 border rounded-md bg-gray-50'
+                      >
+                        <div className='flex-1'>
+                          <p className='font-medium text-sm'>{exercise.exerciseTitle}</p>
+                          <p className='text-xs text-gray-600'>
+                            {exercise.weight} {form.getFieldValue('weightUnit')} •{' '}
+                            {exercise.minReps}-{exercise.maxReps} reps
+                          </p>
+                        </div>
+                        <Button
+                          type='button'
+                          onClick={() => removeExercise(index)}
+                          variant='outline'
+                          size='sm'
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className='flex-row gap-2 mt-4'>
+            {currentStage === 'basic' ? (
+              <Button type='button' onClick={goToNextStage} className='flex-1'>
+                Next: Add Exercises
+                <ArrowRight className='w-4 h-4 ml-2' />
+              </Button>
+            ) : (
+              <>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={goToPreviousStage}
+                  className='flex-1'
+                >
+                  <ArrowLeft className='w-4 h-4 mr-2' />
+                  Back
+                </Button>
+                <Button type='submit' disabled={exercises.length === 0} className='flex-1'>
+                  Create Workout ({exercises.length} exercise{exercises.length !== 1 ? 's' : ''})
+                </Button>
+              </>
             )}
-          </FieldGroup>
+          </DialogFooter>
         </form>
-      </CardContent>
-      <CardFooter>
-        <Field orientation='horizontal'>
-          <Button
-            type='button'
-            variant='outline'
-            onClick={() => {
-              form.reset()
-              setExercises([])
-            }}
-          >
-            Reset
-          </Button>
-          <Button type='submit' form='workout-form' disabled={exercises.length === 0}>
-            Create Workout ({exercises.length} exercise{exercises.length !== 1 ? 's' : ''})
-          </Button>
-        </Field>
-      </CardFooter>
-    </Card>
+      </DialogContent>
+    </Dialog>
   )
 }
