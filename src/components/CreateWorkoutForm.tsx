@@ -1,6 +1,5 @@
 import { useForm } from '@tanstack/react-form'
 import { api } from 'convex/_generated/api'
-import { useMutation } from 'convex/react'
 import { useState } from 'react'
 import { Plus, Edit } from 'lucide-react'
 import { Button } from '~/components/ui/button'
@@ -19,6 +18,8 @@ import {
   DialogTrigger,
 } from './ui/dialog'
 import type { Id } from 'convex/_generated/dataModel'
+import { useMutation } from '@tanstack/react-query'
+import { useConvexMutation } from '@convex-dev/react-query'
 
 type WorkoutData = {
   title: string
@@ -35,8 +36,12 @@ type WorkoutFormProps = {
 }
 
 export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutFormProps) {
-  const createWorkout = useMutation(api.workouts.addWorkout)
-  const updateWorkout = useMutation(api.workouts.editWorkoutById)
+  const { mutate: createWorkout } = useMutation({
+    mutationFn: useConvexMutation(api.workouts.addWorkout),
+  })
+  const { mutate: updateWorkout } = useMutation({
+    mutationFn: useConvexMutation(api.workouts.editWorkoutById),
+  })
 
   const [exercises, setExercises] = useState<Exercise[]>(initialData?.exercises || [])
   const [isOpen, setIsOpen] = useState(false)
@@ -64,7 +69,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
         // Validate basic workout info
         const basicValidation = formSchema.safeParse(value)
         if (!basicValidation.success) {
-          return basicValidation.error.format()
+          return basicValidation.error
         }
 
         // Validate that at least one exercise is added
@@ -77,9 +82,11 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
         return undefined
       },
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: ({ value }) => {
+      console.log({ value, isEditMode })
+
       if (isEditMode && workoutId) {
-        await updateWorkout({
+        updateWorkout({
           id: workoutId,
           updates: {
             title: value.title,
@@ -89,7 +96,8 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
           },
         })
       } else {
-        await createWorkout({
+        console.log('Create block')
+        createWorkout({
           title: value.title,
           selectedDays: value.selectedDays,
           weightUnit: value.weightUnit,

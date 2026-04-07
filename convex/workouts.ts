@@ -18,7 +18,6 @@ export const addWorkout = mutation({
 
   handler: async (ctx, args) => {
     const { title, selectedDays, weightUnit, exercises } = args
-    console.log({ args })
 
     const id = await ctx.db.insert('workouts', {
       title,

@@ -17,8 +17,4 @@ export const formSchema = z.object({
     .max(50, 'Workout title must be at most 50 characters.'),
   selectedDays: z.array(z.string()).min(1, 'Select at least one day'),
   weightUnit: z.string(),
-  exerciseTitle: z.string(),
-  weight: z.string(),
-  minReps: z.string(),
-  maxReps: z.string(),
 })

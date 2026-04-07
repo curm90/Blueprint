@@ -4,7 +4,7 @@ import { Trash } from 'lucide-react'
 import { useConvexMutation } from '@convex-dev/react-query'
 import { api } from 'convex/_generated/api'
 import type { Id } from 'convex/_generated/dataModel'
-import { Dialog, DialogContent, DialogTrigger } from './ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
 import { Button } from './ui/button'
 
 export default function DeleteWorkoutDialog({ workoutId }: { workoutId: Id<'workouts'> }) {
@@ -22,7 +22,9 @@ export default function DeleteWorkoutDialog({ workoutId }: { workoutId: Id<'work
         </Button>
       </DialogTrigger>
       <DialogContent className='flex flex-col gap-1'>
-        <h2 className='text-lg font-semibold'>Delete Workout</h2>
+        <DialogTitle>
+          <h2 className='text-lg font-semibold'>Delete Workout</h2>
+        </DialogTitle>
         <p className='text-sm text-muted-foreground'>
           Are you sure you want to delete this workout?
         </p>
