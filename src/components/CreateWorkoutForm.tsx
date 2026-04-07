@@ -152,8 +152,8 @@ export function CreateWorkoutForm() {
             form.handleSubmit()
           }}
         >
-          <DialogHeader>
-            <DialogTitle>
+          <DialogHeader className='flex flex-col gap-0'>
+            <DialogTitle className='text-xl'>
               {currentStage === 'basic' ? 'Workout Details' : 'Add Exercises'}
             </DialogTitle>
             <DialogDescription>
@@ -163,7 +163,7 @@ export function CreateWorkoutForm() {
             </DialogDescription>
           </DialogHeader>
           {currentStage === 'basic' ? (
-            <div className='space-y-6'>
+            <div className='space-y-6 mt-6'>
               {/* Stage 1: Basic Info */}
               <form.Field
                 name='title'
@@ -243,11 +243,9 @@ export function CreateWorkoutForm() {
               />
             </div>
           ) : (
-            <div className='space-y-6'>
+            <div className='space-y-6 mt-6'>
               {/* Stage 2: Exercises */}
               <div className='space-y-4'>
-                <h3 className='text-lg font-medium'>Add Exercise</h3>
-
                 {/* Exercise Title */}
                 <form.Field
                   name='exerciseTitle'
