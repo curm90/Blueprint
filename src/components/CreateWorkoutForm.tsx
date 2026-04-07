@@ -39,19 +39,16 @@ export function CreateWorkoutForm() {
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log('Form submission triggered with:', { value, exercises })
-
       if (exercises.length === 0) {
         alert('Please add at least one exercise')
         return
       }
 
-      console.log('Creating workout with:', { value, exercises })
       await createWorkout({
         title: value.title,
         selectedDays: value.selectedDays,
         weightUnit: value.weightUnit,
-        exercises: exercises,
+        exercises,
       })
 
       // Reset form and exercises
