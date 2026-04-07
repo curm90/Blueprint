@@ -2,8 +2,9 @@ import { convexQuery } from '@convex-dev/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { api } from 'convex/_generated/api'
-import { Edit, Trash } from 'lucide-react'
+import { Delete, Edit, Trash } from 'lucide-react'
 import { CreateWorkoutForm } from '~/components/CreateWorkoutForm'
+import DeleteWorkoutDialog from '~/components/DeleteWorkoutDialog'
 import { EmptyUI } from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'
 import { Button } from '~/components/ui/button'
@@ -48,9 +49,10 @@ function RouteComponent() {
                     <Button variant='outline'>
                       <Edit />
                     </Button>
-                    <Button variant='outline'>
+                    {/* <Button variant='outline'>
                       <Trash />
-                    </Button>
+                    </Button> */}
+                    <DeleteWorkoutDialog workoutId={workout._id} />
                   </div>
                 </div>
               </CardHeader>

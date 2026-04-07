@@ -41,3 +41,14 @@ export const listWorkouts = query({
     return workouts
   },
 })
+
+export const deleteWorkoutById = mutation({
+  args: {
+    id: v.id('workouts'),
+  },
+  handler: async (ctx, args) => {
+    const { id } = args
+
+    await ctx.db.delete('workouts', id)
+  },
+})
