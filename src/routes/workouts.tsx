@@ -2,11 +2,10 @@ import { convexQuery } from '@convex-dev/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { api } from 'convex/_generated/api'
-import { Edit, Trash } from 'lucide-react'
-import { CreateWorkoutForm } from '~/components/CreateWorkoutForm'
+import { CreateWorkoutForm, EditWorkoutForm } from '~/components/CreateWorkoutForm'
+import DeleteWorkoutDialog from '~/components/DeleteWorkoutDialog'
 import { EmptyUI } from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'
-import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
 
@@ -45,12 +44,16 @@ function RouteComponent() {
                 <div className='flex items-center justify-between'>
                   <h4 className='text-lg font-semibold'>{workout.title}</h4>
                   <div className='flex items-center gap-2'>
-                    <Button variant='outline'>
-                      <Edit />
-                    </Button>
-                    <Button variant='outline'>
-                      <Trash />
-                    </Button>
+                    <EditWorkoutForm
+                      workoutId={workout._id}
+                      initialData={{
+                        title: workout.title,
+                        selectedDays: workout.selectedDays,
+                        weightUnit: workout.weightUnit,
+                        exercises: workout.exercises,
+                      }}
+                    />
+                    <DeleteWorkoutDialog workoutId={workout._id} />
                   </div>
                 </div>
               </CardHeader>

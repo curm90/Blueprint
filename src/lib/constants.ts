@@ -1,9 +1,9 @@
 export const DAYS_OF_WEEK = [
-  { value: 'monday', label: 'Monday' },
-  { value: 'tuesday', label: 'Tuesday' },
-  { value: 'wednesday', label: 'Wednesday' },
-  { value: 'thursday', label: 'Thursday' },
-  { value: 'friday', label: 'Friday' },
-  { value: 'saturday', label: 'Saturday' },
-  { value: 'sunday', label: 'Sunday' },
+  { value: 'monday', shortLabel: 'Mon', label: 'Monday' },
+  { value: 'tuesday', shortLabel: 'Tue', label: 'Tuesday' },
+  { value: 'wednesday', shortLabel: 'Wed', label: 'Wednesday' },
+  { value: 'thursday', shortLabel: 'Thu', label: 'Thursday' },
+  { value: 'friday', shortLabel: 'Fri', label: 'Friday' },
+  { value: 'saturday', shortLabel: 'Sat', label: 'Saturday' },
+  { value: 'sunday', shortLabel: 'Sun', label: 'Sunday' },
 ]

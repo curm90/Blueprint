@@ -1,61 +1,97 @@
-import { useForm } from '@tanstack/react-form'
-import { api } from 'convex/_generated/api'
-import { useMutation } from 'convex/react'
 import { useState } from 'react'
+import { useForm } from '@tanstack/react-form'
+import { useMutation } from '@tanstack/react-query'
+import { useConvexMutation } from '@convex-dev/react-query'
+import { Plus, Edit } from 'lucide-react'
+import { z } from 'zod'
+import { api } from 'convex/_generated/api'
 import { Button } from '~/components/ui/button'
 import { Field, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Checkbox } from '~/components/ui/checkbox'
-import { exerciseSchema, formSchema } from '~/lib/schemas'
+import AddedExerciseList from './AddedExerciseList'
+import { exerciseSchema } from '~/lib/schemas'
 import { DAYS_OF_WEEK } from '~/lib/constants'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog'
-import { Plus, ArrowLeft, ArrowRight } from 'lucide-react'
 
-export function CreateWorkoutForm() {
-  const createWorkout = useMutation(api.workouts.addWorkout)
-  const [exercises, setExercises] = useState<Exercise[]>([])
-  const [currentStage, setCurrentStage] = useState<'basic' | 'exercises'>('basic')
+export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutFormProps) {
+  const { mutate: createWorkout } = useMutation({
+    mutationFn: useConvexMutation(api.workouts.addWorkout),
+  })
+  const { mutate: updateWorkout } = useMutation({
+    mutationFn: useConvexMutation(api.workouts.editWorkoutById),
+  })
+
+  const [exercises, setExercises] = useState<Exercise[]>(initialData?.exercises || [])
   const [isOpen, setIsOpen] = useState(false)
+  const [exerciseFormErrors, setExerciseFormErrors] = useState<{
+    exerciseTitle?: string[]
+    weight?: string[]
+    minReps?: string[]
+    maxReps?: string[]
+  }>({})
+
+  const isEditMode = mode === 'edit'
+
+  // Helper function for field validation
+  function validateField(schema: any, value: any) {
+    const result = schema.safeParse(value)
+    return result.success ? undefined : result.error.issues[0]?.message
+  }
 
   const form = useForm({
     defaultValues: {
-      title: '',
-      selectedDays: [] as string[],
-      weightUnit: 'kg',
+      title: initialData?.title || '',
+      selectedDays: initialData?.selectedDays || ([] as string[]),
+      weightUnit: initialData?.weightUnit || 'kg',
       exerciseTitle: '',
       weight: '',
       minReps: '',
       maxReps: '',
     },
     validators: {
-      onSubmit: formSchema,
+      onSubmit: () => {
+        // Only validate that at least one exercise is added (form-level validation)
+        if (exercises.length === 0) {
+          return {
+            form: `Please add at least one exercise before ${isEditMode ? 'updating' : 'creating'} the workout.`,
+          }
+        }
+        return undefined
+      },
     },
-    onSubmit: async ({ value }) => {
-      if (exercises.length === 0) {
-        alert('Please add at least one exercise')
-        return
+    onSubmit: ({ value }) => {
+      if (isEditMode && workoutId) {
+        updateWorkout({
+          id: workoutId,
+          updates: {
+            title: value.title,
+            selectedDays: value.selectedDays,
+            weightUnit: value.weightUnit,
+            exercises,
+          },
+        })
+      } else {
+        createWorkout({
+          title: value.title,
+          selectedDays: value.selectedDays,
+          weightUnit: value.weightUnit,
+          exercises,
+        })
       }
-
-      await createWorkout({
-        title: value.title,
-        selectedDays: value.selectedDays,
-        weightUnit: value.weightUnit,
-        exercises,
-      })
 
       // Reset form and exercises
       form.reset()
-      setExercises([])
-      setCurrentStage('basic')
-      setIsOpen(false) // Close the dialog
+      setExercises(initialData?.exercises || [])
+      setExerciseFormErrors({})
+      setIsOpen(false)
     },
   })
 
@@ -68,14 +104,22 @@ export function CreateWorkoutForm() {
     }
 
     // Validate exercise data
-    const validation = exerciseSchema.safeParse({
-      ...exerciseValues,
-    })
+    const validation = exerciseSchema.safeParse(exerciseValues)
 
     if (!validation.success) {
-      alert('Please fill in all exercise fields correctly')
+      // Set field-specific errors
+      const errorsByField = validation.error.format()
+      setExerciseFormErrors({
+        exerciseTitle: errorsByField.exerciseTitle?._errors,
+        weight: errorsByField.weight?._errors,
+        minReps: errorsByField.minReps?._errors,
+        maxReps: errorsByField.maxReps?._errors,
+      })
       return
     }
+
+    // Clear any previous errors
+    setExerciseFormErrors({})
 
     const newExercise: Exercise = {
       exerciseTitle: exerciseValues.exerciseTitle,
@@ -93,44 +137,17 @@ export function CreateWorkoutForm() {
     form.setFieldValue('maxReps', '')
   }
 
-  const removeExercise = (index: number) => {
+  function removeExercise(index: number) {
     setExercises(exercises.filter((_, i) => i !== index))
   }
 
-  const validateBasicInfo = () => {
-    const title = form.getFieldValue('title')
-    const selectedDays = form.getFieldValue('selectedDays')
-
-    if (!title.trim()) {
-      alert('Please enter a workout title')
-      return false
-    }
-
-    if (selectedDays.length === 0) {
-      alert('Please select at least one day')
-      return false
-    }
-
-    return true
-  }
-
-  const goToNextStage = () => {
-    if (validateBasicInfo()) {
-      setCurrentStage('exercises')
-    }
-  }
-
-  const goToPreviousStage = () => {
-    setCurrentStage('basic')
-  }
-
-  const handleDialogClose = () => {
-    setCurrentStage('basic')
+  function handleDialogClose() {
     form.reset()
-    setExercises([])
+    setExercises(initialData?.exercises || [])
+    setExerciseFormErrors({})
   }
 
-  const handleDialogOpenChange = (open: boolean) => {
+  function handleDialogOpenChange(open: boolean) {
     setIsOpen(open)
     if (!open) {
       handleDialogClose()
@@ -139,13 +156,8 @@ export function CreateWorkoutForm() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
-      <DialogTrigger asChild>
-        <Button onClick={() => setIsOpen(true)}>
-          <Plus />
-          Create Workout
-        </Button>
-      </DialogTrigger>
-      <DialogContent className='w-full p-6 sm:max-w-120'>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className='w-full p-6 sm:max-w-xl max-h-[90vh] overflow-y-auto'>
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -154,19 +166,29 @@ export function CreateWorkoutForm() {
         >
           <DialogHeader className='flex flex-col gap-0'>
             <DialogTitle className='text-xl'>
-              {currentStage === 'basic' ? 'Workout Details' : 'Add Exercises'}
+              {isEditMode ? 'Edit Workout' : 'Create New Workout'}
             </DialogTitle>
             <DialogDescription>
-              {currentStage === 'basic'
-                ? 'Enter your workout details to get started'
-                : `Add exercises to "${form.getFieldValue('title')}"`}
+              {isEditMode
+                ? 'Update your workout details and exercises'
+                : 'Enter your workout details and add exercises'}
             </DialogDescription>
           </DialogHeader>
-          {currentStage === 'basic' ? (
-            <div className='space-y-6 mt-6'>
-              {/* Stage 1: Basic Info */}
+          <div className='space-y-6 mt-6'>
+            {/* Basic Workout Info - 2 per row layout */}
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
               <form.Field
                 name='title'
+                validators={{
+                  onSubmit: ({ value }) =>
+                    validateField(
+                      z
+                        .string()
+                        .min(5, 'Workout title must be at least 5 characters.')
+                        .max(50, 'Workout title must be at most 50 characters.'),
+                      value,
+                    ),
+                }}
                 children={(field) => {
                   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
                   return (
@@ -182,45 +204,13 @@ export function CreateWorkoutForm() {
                         placeholder='E.g. Upper Body Push Day'
                         autoComplete='off'
                       />
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      {isInvalid && field.state.meta.errors && (
+                        <FieldError errors={[{ message: field.state.meta.errors[0] }]} />
+                      )}
                     </Field>
                   )
                 }}
               />
-
-              {/* Selected Days */}
-              <form.Field
-                name='selectedDays'
-                children={(field) => {
-                  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel>Selected Days</FieldLabel>
-                      <div className='grid grid-cols-2 md:grid-cols-4 gap-2 mt-2'>
-                        {DAYS_OF_WEEK.map((day) => (
-                          <Checkbox
-                            key={day.value}
-                            label={day.label}
-                            checked={field.state.value.includes(day.value)}
-                            onChange={(e) => {
-                              const isChecked = e.target.checked
-                              const currentDays = field.state.value
-                              if (isChecked) {
-                                field.handleChange([...currentDays, day.value])
-                              } else {
-                                field.handleChange(currentDays.filter((d) => d !== day.value))
-                              }
-                            }}
-                          />
-                        ))}
-                      </div>
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                    </Field>
-                  )
-                }}
-              />
-
-              {/* Weight Unit */}
               <form.Field
                 name='weightUnit'
                 children={(field) => {
@@ -242,178 +232,255 @@ export function CreateWorkoutForm() {
                 }}
               />
             </div>
-          ) : (
-            <div className='space-y-6 mt-6'>
-              {/* Stage 2: Exercises */}
-              <div className='space-y-4'>
-                {/* Exercise Title */}
+            {/* Selected Days */}
+            <form.Field
+              name='selectedDays'
+              validators={{
+                onSubmit: ({ value }) =>
+                  validateField(z.array(z.string()).min(1, 'Select at least one day'), value),
+              }}
+              children={(field) => {
+                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel>Selected Days</FieldLabel>
+                    <div className='grid grid-cols-4 md:grid-cols-7 gap-2 mt-2'>
+                      {DAYS_OF_WEEK.map((day) => (
+                        <Checkbox
+                          key={day.value}
+                          label={day.shortLabel}
+                          checked={field.state.value.includes(day.value)}
+                          onChange={(e) => {
+                            const isChecked = e.target.checked
+                            const currentDays = field.state.value
+                            if (isChecked) {
+                              field.handleChange([...currentDays, day.value])
+                            } else {
+                              field.handleChange(currentDays.filter((d) => d !== day.value))
+                            }
+                          }}
+                        />
+                      ))}
+                    </div>
+                    {isInvalid && field.state.meta.errors && (
+                      <FieldError errors={[{ message: field.state.meta.errors[0] }]} />
+                    )}
+                  </Field>
+                )
+              }}
+            />
+            {/* Add Exercise Section */}
+            <div className='border-t pt-6'>
+              <h3 className='text-lg font-semibold mb-4'>Add Exercises</h3>
+              <div className='grid grid-cols-2 gap-4'>
                 <form.Field
                   name='exerciseTitle'
                   children={(field) => {
-                    const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                    const hasError =
+                      exerciseFormErrors.exerciseTitle &&
+                      exerciseFormErrors.exerciseTitle.length > 0
                     return (
-                      <Field data-invalid={isInvalid}>
+                      <Field data-invalid={hasError}>
                         <FieldLabel htmlFor={field.name}>Exercise Name</FieldLabel>
                         <Input
                           id={field.name}
                           name={field.name}
                           value={field.state.value}
                           onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value)
+                            // Clear error when user starts typing
+                            if (exerciseFormErrors.exerciseTitle) {
+                              setExerciseFormErrors((prev) => ({
+                                ...prev,
+                                exerciseTitle: undefined,
+                              }))
+                            }
+                          }}
+                          aria-invalid={hasError}
                           placeholder='E.g. Bench Press'
                           autoComplete='off'
                         />
-                        {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                        {hasError && (
+                          <FieldError
+                            errors={exerciseFormErrors.exerciseTitle?.map((err) => ({
+                              message: err,
+                            }))}
+                          />
+                        )}
                       </Field>
                     )
                   }}
                 />
-
-                {/* Exercise Details Grid */}
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                  <form.Field
-                    name='weight'
-                    children={(field) => {
-                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                      return (
-                        <Field data-invalid={isInvalid}>
-                          <FieldLabel htmlFor={field.name}>
-                            Weight ({form.getFieldValue('weightUnit')})
-                          </FieldLabel>
-                          <Input
-                            type='number'
-                            step='0.5'
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            placeholder='E.g. 60'
-                            autoComplete='off'
+                <form.Field
+                  name='weight'
+                  children={(field) => {
+                    const hasError =
+                      exerciseFormErrors.weight && exerciseFormErrors.weight.length > 0
+                    return (
+                      <Field data-invalid={hasError}>
+                        <FieldLabel htmlFor={field.name}>
+                          Weight ({form.getFieldValue('weightUnit')})
+                        </FieldLabel>
+                        <Input
+                          type='number'
+                          step='0.5'
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value)
+                            // Clear error when user starts typing
+                            if (exerciseFormErrors.weight) {
+                              setExerciseFormErrors((prev) => ({ ...prev, weight: undefined }))
+                            }
+                          }}
+                          aria-invalid={hasError}
+                          placeholder='E.g. 60'
+                          autoComplete='off'
+                        />
+                        {hasError && (
+                          <FieldError
+                            errors={exerciseFormErrors.weight?.map((err) => ({ message: err }))}
                           />
-                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                        </Field>
-                      )
-                    }}
-                  />
-                  <form.Field
-                    name='minReps'
-                    children={(field) => {
-                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                      return (
-                        <Field data-invalid={isInvalid}>
-                          <FieldLabel htmlFor={field.name}>Min Reps</FieldLabel>
-                          <Input
-                            type='number'
-                            min='1'
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            placeholder='E.g. 8'
-                            autoComplete='off'
+                        )}
+                      </Field>
+                    )
+                  }}
+                />
+                <form.Field
+                  name='minReps'
+                  children={(field) => {
+                    const hasError =
+                      exerciseFormErrors.minReps && exerciseFormErrors.minReps.length > 0
+                    return (
+                      <Field data-invalid={hasError}>
+                        <FieldLabel htmlFor={field.name}>Min Reps</FieldLabel>
+                        <Input
+                          type='number'
+                          min='1'
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value)
+                            // Clear error when user starts typing
+                            if (exerciseFormErrors.minReps) {
+                              setExerciseFormErrors((prev) => ({ ...prev, minReps: undefined }))
+                            }
+                          }}
+                          aria-invalid={hasError}
+                          placeholder='E.g. 8'
+                          autoComplete='off'
+                        />
+                        {hasError && (
+                          <FieldError
+                            errors={exerciseFormErrors.minReps?.map((err) => ({ message: err }))}
                           />
-                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                        </Field>
-                      )
-                    }}
-                  />
-                  <form.Field
-                    name='maxReps'
-                    children={(field) => {
-                      const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
-                      return (
-                        <Field data-invalid={isInvalid}>
-                          <FieldLabel htmlFor={field.name}>Max Reps</FieldLabel>
-                          <Input
-                            type='number'
-                            min='1'
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            placeholder='E.g. 12'
-                            autoComplete='off'
+                        )}
+                      </Field>
+                    )
+                  }}
+                />
+                <form.Field
+                  name='maxReps'
+                  children={(field) => {
+                    const hasError =
+                      exerciseFormErrors.maxReps && exerciseFormErrors.maxReps.length > 0
+                    return (
+                      <Field data-invalid={hasError}>
+                        <FieldLabel htmlFor={field.name}>Max Reps</FieldLabel>
+                        <Input
+                          type='number'
+                          min='1'
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value)
+                            // Clear error when user starts typing
+                            if (exerciseFormErrors.maxReps) {
+                              setExerciseFormErrors((prev) => ({ ...prev, maxReps: undefined }))
+                            }
+                          }}
+                          aria-invalid={hasError}
+                          placeholder='E.g. 12'
+                          autoComplete='off'
+                        />
+                        {hasError && (
+                          <FieldError
+                            errors={exerciseFormErrors.maxReps?.map((err) => ({ message: err }))}
                           />
-                          {isInvalid && <FieldError errors={field.state.meta.errors} />}
-                        </Field>
-                      )
-                    }}
-                  />
-                </div>
-
-                <Button type='button' onClick={addExercise} className='w-full' variant='outline'>
-                  <Plus className='w-4 h-4 mr-2' />
-                  Add Exercise
-                </Button>
+                        )}
+                      </Field>
+                    )
+                  }}
+                />
               </div>
-
+              <Button type='button' onClick={addExercise} className='w-full mt-4' variant='outline'>
+                <Plus className='w-4 h-4 mr-2' />
+                Add Exercise
+              </Button>
               {/* Exercise List */}
               {exercises.length > 0 && (
-                <div className='border-t pt-4'>
+                <div className='mt-6'>
                   <h4 className='text-sm font-medium mb-3 text-gray-600'>
                     Added Exercises ({exercises.length})
                   </h4>
-                  <div className='space-y-2 max-h-48 overflow-y-auto'>
-                    {exercises.map((exercise, index) => (
-                      <div
-                        key={index}
-                        className='flex items-center justify-between p-3 border rounded-md bg-gray-50'
-                      >
-                        <div className='flex-1'>
-                          <p className='font-medium text-sm'>{exercise.exerciseTitle}</p>
-                          <p className='text-xs text-gray-600'>
-                            {exercise.weight} {form.getFieldValue('weightUnit')} •{' '}
-                            {exercise.minReps}-{exercise.maxReps} reps
-                          </p>
-                        </div>
-                        <Button
-                          type='button'
-                          onClick={() => removeExercise(index)}
-                          variant='outline'
-                          size='sm'
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+                  <AddedExerciseList
+                    exercises={exercises}
+                    removeExercise={removeExercise}
+                    weightUnit={form.getFieldValue('weightUnit')}
+                  />
                 </div>
               )}
             </div>
-          )}
-
-          <DialogFooter className='flex-row gap-2 mt-4'>
-            {currentStage === 'basic' ? (
-              <Button type='button' onClick={goToNextStage} className='flex-1'>
-                Next: Add Exercises
-                <ArrowRight className='w-4 h-4 ml-2' />
-              </Button>
-            ) : (
-              <>
-                <Button
-                  type='button'
-                  variant='outline'
-                  onClick={goToPreviousStage}
-                  className='flex-1'
-                >
-                  <ArrowLeft className='w-4 h-4 mr-2' />
-                  Back
-                </Button>
-                <Button type='submit' disabled={exercises.length === 0} className='flex-1'>
-                  Create Workout ({exercises.length} exercise{exercises.length !== 1 ? 's' : ''})
-                </Button>
-              </>
-            )}
-          </DialogFooter>
+          </div>
+          {/* Form-level error for missing exercises */}
+          <form.Subscribe
+            selector={(state) => [state.errors]}
+            children={([errors]) => {
+              const formError = errors?.find(
+                (error) => typeof error === 'object' && 'form' in error,
+              )
+              return formError && 'form' in formError ? (
+                <div className='mt-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md'>
+                  {formError.form as string}
+                </div>
+              ) : null
+            }}
+          />
+          <Button type='submit' disabled={exercises.length === 0} className='w-full mt-6'>
+            {isEditMode ? 'Update' : 'Create'} Workout ({exercises.length} exercise
+            {exercises.length !== 1 ? 's' : ''})
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+// Backward compatibility wrapper for create mode
+export function CreateWorkoutForm() {
+  return (
+    <WorkoutForm mode='create'>
+      <Button>
+        <Plus />
+        Create Workout
+      </Button>
+    </WorkoutForm>
+  )
+}
+
+export function EditWorkoutForm({ workoutId, initialData }: EditWorkoutFormProps) {
+  return (
+    <WorkoutForm mode='edit' workoutId={workoutId} initialData={initialData}>
+      <Button variant='outline'>
+        <Edit />
+      </Button>
+    </WorkoutForm>
   )
 }
