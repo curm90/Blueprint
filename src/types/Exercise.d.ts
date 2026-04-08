@@ -14,7 +14,7 @@ type WorkoutData = {
 
 type WorkoutFormProps = {
   mode: 'create' | 'edit'
-  workoutId?: Id<'workouts'>
+  workoutId?: import('../../convex/_generated/dataModel').Id<'workouts'>
   initialData?: WorkoutData
   children: React.ReactNode
 }
@@ -33,6 +33,6 @@ type AddedExerciseListProps = {
 }
 
 type EditWorkoutFormProps = {
-  workoutId: Id<'workouts'>
+  workoutId: import('../../convex/_generated/dataModel').Id<'workouts'>
   initialData: WorkoutData
 }
