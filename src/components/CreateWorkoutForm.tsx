@@ -1,13 +1,17 @@
-import { useForm } from '@tanstack/react-form'
-import { api } from 'convex/_generated/api'
 import { useState } from 'react'
+import { useForm } from '@tanstack/react-form'
+import { useMutation } from '@tanstack/react-query'
+import { useConvexMutation } from '@convex-dev/react-query'
 import { Plus, Edit } from 'lucide-react'
+import { z } from 'zod'
+import { api } from 'convex/_generated/api'
+import type { Id } from 'convex/_generated/dataModel'
 import { Button } from '~/components/ui/button'
 import { Field, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
 import { Checkbox } from '~/components/ui/checkbox'
 import AddedExerciseList from './AddedExerciseList'
-import { exerciseSchema, formSchema } from '~/lib/schemas'
+import { exerciseSchema } from '~/lib/schemas'
 import { DAYS_OF_WEEK } from '~/lib/constants'
 import {
   Dialog,
@@ -17,23 +21,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog'
-import type { Id } from 'convex/_generated/dataModel'
-import { useMutation } from '@tanstack/react-query'
-import { useConvexMutation } from '@convex-dev/react-query'
-
-type WorkoutData = {
-  title: string
-  selectedDays: string[]
-  weightUnit: string
-  exercises: Exercise[]
-}
-
-type WorkoutFormProps = {
-  mode: 'create' | 'edit'
-  workoutId?: Id<'workouts'>
-  initialData?: WorkoutData
-  children: React.ReactNode
-}
 
 export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutFormProps) {
   const { mutate: createWorkout } = useMutation({
@@ -54,6 +41,12 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
 
   const isEditMode = mode === 'edit'
 
+  // Helper function for field validation
+  function validateField(schema: any, value: any) {
+    const result = schema.safeParse(value)
+    return result.success ? undefined : result.error.issues[0]?.message
+  }
+
   const form = useForm({
     defaultValues: {
       title: initialData?.title || '',
@@ -65,26 +58,17 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
       maxReps: '',
     },
     validators: {
-      onSubmit: ({ value }) => {
-        // Validate basic workout info
-        const basicValidation = formSchema.safeParse(value)
-        if (!basicValidation.success) {
-          return basicValidation.error
-        }
-
-        // Validate that at least one exercise is added
+      onSubmit: () => {
+        // Only validate that at least one exercise is added (form-level validation)
         if (exercises.length === 0) {
           return {
             form: `Please add at least one exercise before ${isEditMode ? 'updating' : 'creating'} the workout.`,
           }
         }
-
         return undefined
       },
     },
     onSubmit: ({ value }) => {
-      console.log({ value, isEditMode })
-
       if (isEditMode && workoutId) {
         updateWorkout({
           id: workoutId,
@@ -96,7 +80,6 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
           },
         })
       } else {
-        console.log('Create block')
         createWorkout({
           title: value.title,
           selectedDays: value.selectedDays,
@@ -155,17 +138,17 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
     form.setFieldValue('maxReps', '')
   }
 
-  const removeExercise = (index: number) => {
+  function removeExercise(index: number) {
     setExercises(exercises.filter((_, i) => i !== index))
   }
 
-  const handleDialogClose = () => {
+  function handleDialogClose() {
     form.reset()
     setExercises(initialData?.exercises || [])
     setExerciseFormErrors({})
   }
 
-  const handleDialogOpenChange = (open: boolean) => {
+  function handleDialogOpenChange(open: boolean) {
     setIsOpen(open)
     if (!open) {
       handleDialogClose()
@@ -197,6 +180,16 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
             <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
               <form.Field
                 name='title'
+                validators={{
+                  onSubmit: ({ value }) =>
+                    validateField(
+                      z
+                        .string()
+                        .min(5, 'Workout title must be at least 5 characters.')
+                        .max(50, 'Workout title must be at most 50 characters.'),
+                      value,
+                    ),
+                }}
                 children={(field) => {
                   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
                   return (
@@ -212,7 +205,9 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
                         placeholder='E.g. Upper Body Push Day'
                         autoComplete='off'
                       />
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      {isInvalid && field.state.meta.errors && (
+                        <FieldError errors={[{ message: field.state.meta.errors[0] }]} />
+                      )}
                     </Field>
                   )
                 }}
@@ -241,6 +236,10 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
             {/* Selected Days */}
             <form.Field
               name='selectedDays'
+              validators={{
+                onSubmit: ({ value }) =>
+                  validateField(z.array(z.string()).min(1, 'Select at least one day'), value),
+              }}
               children={(field) => {
                 const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
                 return (
@@ -264,7 +263,9 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
                         />
                       ))}
                     </div>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && field.state.meta.errors && (
+                      <FieldError errors={[{ message: field.state.meta.errors[0] }]} />
+                    )}
                   </Field>
                 )
               }}
@@ -473,12 +474,6 @@ export function CreateWorkoutForm() {
       </Button>
     </WorkoutForm>
   )
-}
-
-// Edit wrapper component
-type EditWorkoutFormProps = {
-  workoutId: Id<'workouts'>
-  initialData: WorkoutData
 }
 
 export function EditWorkoutForm({ workoutId, initialData }: EditWorkoutFormProps) {
