@@ -60,7 +60,7 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
   return (
     <Dialog open={open} onOpenChange={(o) => (o ? setOpen(true) : handleReset())}>
       <DialogTrigger asChild>
-        <Button className='w-full'>Track Workout</Button>
+        <Button className='w-fit m-4'>Track Workout</Button>
       </DialogTrigger>
       <DialogContent className='sm:max-w-md'>
         <DialogHeader>
