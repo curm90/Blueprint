@@ -68,3 +68,16 @@ export const trackWorkout = mutation({
     await ctx.db.patch(workoutId, { exercises: updatedExercises })
   },
 })
+
+export const getTodaysCompletions = query({
+  args: {
+    startOfDay: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const completions = await ctx.db
+      .query('workoutCompletions')
+      .withIndex('by_completion', (q) => q.gte('completedAt', args.startOfDay))
+      .collect()
+    return completions
+  },
+})
