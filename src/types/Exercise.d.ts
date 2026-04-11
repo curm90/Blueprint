@@ -36,3 +36,19 @@ type EditWorkoutFormProps = {
   workoutId: import('../../convex/_generated/dataModel').Id<'workouts'>
   initialData: WorkoutData
 }
+
+type FeedbackOption = 'too-easy' | 'just-right' | 'too-hard' | null
+
+type ExerciseResult = {
+  exerciseTitle: string
+  feedback: FeedbackOption
+  weightAdjustment: number
+}
+
+type TrackWorkoutFormProps = {
+  workout: {
+    title: string
+    weightUnit: string
+    exercises: Exercise[]
+  }
+}

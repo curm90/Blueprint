@@ -4,8 +4,8 @@ import { api } from 'convex/_generated/api'
 import { Calendar, Folder } from 'lucide-react'
 import { EmptyUI } from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'
-import { Button } from '~/components/ui/button'
-import { Card, CardAction, CardContent, CardHeader } from '~/components/ui/card'
+import TrackWorkoutForm from '~/components/TrackWorkoutForm'
+import { Card, CardContent, CardHeader } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
 
 export default function Homepage() {
@@ -55,9 +55,7 @@ export default function Homepage() {
                 ))}
               </ul>
             </CardContent>
-            <CardAction className='border-t w-full py-6 px-4'>
-              <Button>Track Workout</Button>
-            </CardAction>
+            <TrackWorkoutForm workout={testWorkout} />
           </Card>
         </Card>
       ) : (
