@@ -16,15 +16,13 @@ export default function DeleteWorkoutDialog({ workoutId }: { workoutId: Id<'work
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button variant='outline'>
           <Trash />
         </Button>
       </DialogTrigger>
       <DialogContent className='flex flex-col gap-1'>
-        <DialogTitle>
-          <h2 className='text-lg font-semibold'>Delete Workout</h2>
-        </DialogTitle>
+        <DialogTitle className='text-lg font-semibold'>Delete Workout</DialogTitle>
         <p className='text-sm text-muted-foreground'>
           Are you sure you want to delete this workout?
         </p>
