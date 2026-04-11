@@ -1,5 +1,9 @@
+import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Check, ChevronRight, TrendingDown, TrendingUp } from 'lucide-react'
+import { useConvexMutation } from '@convex-dev/react-query'
+import { api } from 'convex/_generated/api'
+import { cn } from '~/lib/utils'
 import { Button } from './ui/button'
 import {
   Dialog,
@@ -9,13 +13,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog'
-import { cn } from '~/lib/utils'
 
 export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
   const [open, setOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [selectedOption, setSelectedOption] = useState<FeedbackOption>(null)
   const [results, setResults] = useState<ExerciseResult[]>([])
+
+  const { mutate: trackWorkout } = useMutation({
+    mutationFn: useConvexMutation(api.workoutCompletions.trackWorkout),
+  })
 
   const totalExercises = workout.exercises.length
   const currentExercise = workout.exercises[currentStep]
@@ -24,24 +31,19 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
   function handleNext() {
     if (!selectedOption || !currentExercise) return
 
-    const weightAdjustment =
-      selectedOption === 'too-easy' ? 2.5 : selectedOption === 'too-hard' ? -2.5 : 0
-
     const result: ExerciseResult = {
       exerciseTitle: currentExercise.exerciseTitle,
       feedback: selectedOption,
-      weightAdjustment,
     }
 
     const updatedResults = [...results, result]
-    setResults(updatedResults)
 
     if (!isLastExercise) {
+      setResults(updatedResults)
       setCurrentStep((prev) => prev + 1)
       setSelectedOption(null)
     } else {
-      // All exercises tracked — close for now
-      // TODO: implement post-tracking logic
+      trackWorkout({ workoutId: workout._id, results: updatedResults })
       handleReset()
     }
   }
