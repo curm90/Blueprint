@@ -17,10 +17,29 @@ export default defineSchema({
     exercises: v.array(
       v.object({
         exerciseTitle: v.string(),
+        startingWeight: v.number(),
         weight: v.number(),
         minReps: v.number(),
         maxReps: v.number(),
       }),
     ),
   }),
+
+  workoutCompletions: defineTable({
+    workoutId: v.id('workouts'),
+    completedAt: v.number(),
+    exercises: v.array(
+      v.object({
+        exerciseTitle: v.string(),
+        feedback: v.union(
+          v.null(),
+          v.literal('too-easy'),
+          v.literal('just-right'),
+          v.literal('too-hard'),
+        ),
+      }),
+    ),
+  })
+    .index('by_workout', ['workoutId'])
+    .index('by_completion', ['completedAt']),
 })

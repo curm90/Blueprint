@@ -9,6 +9,7 @@
  */
 
 import type * as myFunctions from "../myFunctions.js";
+import type * as workoutCompletions from "../workoutCompletions.js";
 import type * as workouts from "../workouts.js";
 
 import type {
@@ -19,6 +20,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   myFunctions: typeof myFunctions;
+  workoutCompletions: typeof workoutCompletions;
   workouts: typeof workouts;
 }>;
 

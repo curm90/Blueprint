@@ -124,6 +124,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
     const newExercise: Exercise = {
       exerciseTitle: exerciseValues.exerciseTitle,
       weight: parseFloat(exerciseValues.weight),
+      startingWeight: parseFloat(exerciseValues.weight),
       minReps: parseInt(exerciseValues.minReps),
       maxReps: parseInt(exerciseValues.maxReps),
     }
