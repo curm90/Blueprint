@@ -1,4 +1,6 @@
 import { Link } from '@tanstack/react-router'
+import ThemeToggle from '~/components/ThemeToggle'
+import { Separator } from '~/components/ui/separator'
 
 const links = [
   {
@@ -22,13 +24,17 @@ export default function Header() {
         <div>
           <h1 className='text-2xl font-bold text-foreground'>Blueprint</h1>
         </div>
-        <ul className='flex items-center gap-4'>
-          {links.map((link) => (
-            <li key={link.to}>
-              <Link to={link.to}>{link.label}</Link>
-            </li>
-          ))}
-        </ul>
+        <div className='flex items-center gap-4'>
+          <ThemeToggle />
+          <Separator orientation='vertical' className='h-6' />
+          <ul className='flex items-center gap-4'>
+            {links.map((link) => (
+              <li key={link.to}>
+                <Link to={link.to}>{link.label}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </nav>
     </header>
   )
