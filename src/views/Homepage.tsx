@@ -1,26 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
-import {
-  Calendar,
-  CheckCircle,
-  Dumbbell,
-  Flame,
-  Folder,
-  Target,
-  TrendingUp,
-  Trophy,
-} from 'lucide-react'
+import { CheckCircle, Dumbbell, Folder, TrendingUp } from 'lucide-react'
 import { convexQuery } from '@convex-dev/react-query'
 import { api } from 'convex/_generated/api'
 import { EmptyUI } from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'
-import StatsRowSkeleton from '~/components/StatsRowSkeleton'
 import TrackWorkoutForm from '~/components/TrackWorkoutForm'
 import WorkoutCardSkeleton from '~/components/WorkoutCardSkeleton'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
+import StatsCardsList from '~/components/StatsCardsList'
 
 export default function Homepage() {
   const allWorkouts = useQuery(convexQuery(api.workouts.listWorkouts))
+  const stats = useQuery(convexQuery(api.workoutCompletions.getWorkoutStats, {}))
+
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()
   const todaysWorkouts = allWorkouts.data?.filter((w) => w.selectedDays.includes(today))
 
@@ -32,8 +25,6 @@ export default function Homepage() {
     }),
   )
 
-  const stats = useQuery(convexQuery(api.workoutCompletions.getWorkoutStats, {}))
-
   const completedWorkoutIds = new Set(todaysCompletions.data?.map((c) => c.workoutId) ?? [])
 
   const todayDate = new Date().toLocaleDateString(undefined, {
@@ -42,68 +33,16 @@ export default function Homepage() {
     year: 'numeric',
   })
 
-  const statCards = [
-    {
-      label: 'Current Streak',
-      value: stats.data?.streak ?? 0,
-      suffix: stats.data?.streak === 1 ? 'day' : 'days',
-      icon: <Flame className='size-4' />,
-      color: 'text-orange-500',
-      bg: 'bg-orange-500/10',
-    },
-    {
-      label: 'This Week',
-      value: stats.data?.thisWeekCompletions ?? 0,
-      suffix: 'sessions',
-      icon: <Calendar className='size-4' />,
-      color: 'text-blue-500',
-      bg: 'bg-blue-500/10',
-    },
-    {
-      label: 'Total Completions',
-      value: stats.data?.totalCompletions ?? 0,
-      suffix: 'all time',
-      icon: <Trophy className='size-4' />,
-      color: 'text-amber-500',
-      bg: 'bg-amber-500/10',
-    },
-    {
-      label: "Today's Progress",
-      value: todaysWorkouts ? `${completedWorkoutIds.size}/${todaysWorkouts.length}` : '0/0',
-      suffix: 'workouts',
-      icon: <Target className='size-4' />,
-      color: 'text-emerald-500',
-      bg: 'bg-emerald-500/10',
-    },
-  ]
-
   return (
     <div className='flex flex-col gap-8 mx-auto w-full'>
       <PageTitle title={`Today's workouts`} subtitle={todayDate} />
 
       {/* Stats row */}
-      {stats.isLoading ? (
-        <StatsRowSkeleton />
-      ) : (
-        <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
-          {statCards.map((stat) => (
-            <Card key={stat.label} size='sm'>
-              <CardContent className='flex flex-col gap-1'>
-                <div className='flex items-center gap-2'>
-                  <div className={`rounded-md p-1.5 ${stat.bg}`}>
-                    <span className={stat.color}>{stat.icon}</span>
-                  </div>
-                  <span className='text-xs text-muted-foreground'>{stat.label}</span>
-                </div>
-                <div className='flex items-baseline gap-1.5 pl-0.5'>
-                  <span className='text-2xl font-bold tracking-tight'>{stat.value}</span>
-                  <span className='text-xs text-muted-foreground'>{stat.suffix}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      <StatsCardsList
+        stats={stats}
+        todaysWorkouts={todaysWorkouts}
+        completedWorkoutIds={completedWorkoutIds}
+      />
 
       {/* Workout cards */}
       {allWorkouts.isLoading ? (
