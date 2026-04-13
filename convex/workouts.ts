@@ -49,7 +49,16 @@ export const deleteWorkoutById = mutation({
   handler: async (ctx, args) => {
     const { id } = args
 
-    await ctx.db.delete('workouts', id)
+    // Delete all completions for this workout
+    const completions = await ctx.db
+      .query('workoutCompletions')
+      .withIndex('by_workout', (q) => q.eq('workoutId', id))
+      .collect()
+    for (const completion of completions) {
+      await ctx.db.delete(completion._id)
+    }
+
+    await ctx.db.delete(id)
   },
 })
 
