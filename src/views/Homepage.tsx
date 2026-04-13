@@ -13,7 +13,9 @@ import { convexQuery } from '@convex-dev/react-query'
 import { api } from 'convex/_generated/api'
 import { EmptyUI } from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'
+import StatsRowSkeleton from '~/components/StatsRowSkeleton'
 import TrackWorkoutForm from '~/components/TrackWorkoutForm'
+import WorkoutCardSkeleton from '~/components/WorkoutCardSkeleton'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
 
@@ -80,27 +82,36 @@ export default function Homepage() {
       <PageTitle title={`Today's workouts`} subtitle={todayDate} />
 
       {/* Stats row */}
-      <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
-        {statCards.map((stat) => (
-          <Card key={stat.label} size='sm'>
-            <CardContent className='flex flex-col gap-1'>
-              <div className='flex items-center gap-2'>
-                <div className={`rounded-md p-1.5 ${stat.bg}`}>
-                  <span className={stat.color}>{stat.icon}</span>
+      {stats.isLoading ? (
+        <StatsRowSkeleton />
+      ) : (
+        <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
+          {statCards.map((stat) => (
+            <Card key={stat.label} size='sm'>
+              <CardContent className='flex flex-col gap-1'>
+                <div className='flex items-center gap-2'>
+                  <div className={`rounded-md p-1.5 ${stat.bg}`}>
+                    <span className={stat.color}>{stat.icon}</span>
+                  </div>
+                  <span className='text-xs text-muted-foreground'>{stat.label}</span>
                 </div>
-                <span className='text-xs text-muted-foreground'>{stat.label}</span>
-              </div>
-              <div className='flex items-baseline gap-1.5 pl-0.5'>
-                <span className='text-2xl font-bold tracking-tight'>{stat.value}</span>
-                <span className='text-xs text-muted-foreground'>{stat.suffix}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                <div className='flex items-baseline gap-1.5 pl-0.5'>
+                  <span className='text-2xl font-bold tracking-tight'>{stat.value}</span>
+                  <span className='text-xs text-muted-foreground'>{stat.suffix}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Workout cards */}
-      {todaysWorkouts && todaysWorkouts.length > 0 ? (
+      {allWorkouts.isLoading ? (
+        <div className='flex flex-col gap-4'>
+          <WorkoutCardSkeleton />
+          <WorkoutCardSkeleton />
+        </div>
+      ) : todaysWorkouts && todaysWorkouts.length > 0 ? (
         <div className='flex flex-col gap-4'>
           {todaysWorkouts.map((workout) => {
             const isCompleted = completedWorkoutIds.has(workout._id)
