@@ -21,20 +21,16 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
     header: 'Workout',
     cell: (info) => info.getValue(),
   }),
-  columnHelper.accessor('currentWeight', {
-    header: 'Current Weight',
-    cell: (info) => info.getValue(),
-  }),
   columnHelper.accessor('startingWeight', {
-    header: 'Starting Weight',
+    header: 'Start',
     cell: (info) => info.getValue(),
   }),
-  columnHelper.accessor('weightUnit', {
-    header: 'Weight Unit',
+  columnHelper.accessor('currentWeight', {
+    header: 'Current',
     cell: (info) => info.getValue(),
   }),
   columnHelper.accessor('progressPercentage', {
-    header: 'Progress %',
+    header: 'Change %',
     cell: (info) => {
       const value = info.getValue()
       if (value > 0) {
@@ -57,15 +53,36 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
     },
   }),
   columnHelper.accessor('progressWeight', {
-    header: 'Progress Weight',
+    header: 'Weight Change',
+    cell: (info) => {
+      const value = info.getValue()
+      if (value > 0) {
+        return (
+          <span className='flex items-center gap-1 text-emerald-600'>
+            <TrendingUp className='size-4' />
+            {value}
+          </span>
+        )
+      }
+      if (value < 0) {
+        return (
+          <span className='flex items-center gap-1 text-red-500'>
+            <TrendingDown className='size-4' />
+            {Math.abs(value)}
+          </span>
+        )
+      }
+      return <span>0</span>
+    },
+  }),
+  columnHelper.accessor('weightUnit', {
+    header: 'Unit',
     cell: (info) => info.getValue(),
   }),
 ]
 
 function RouteComponent() {
   const { data: workouts } = useQuery(convexQuery(api.workouts.listWorkouts))
-
-  console.log({ workouts })
 
   function structureData(workouts: any[]) {
     return workouts
