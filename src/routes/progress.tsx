@@ -82,35 +82,17 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
 ]
 
 function RouteComponent() {
-  const { data: workouts } = useQuery(convexQuery(api.workouts.listWorkouts))
-
-  function structureData(workouts: any[]) {
-    return workouts
-      .map((workout) => {
-        return workout.exercises.map((exercise: Exercise) => {
-          return {
-            exerciseTitle: exercise.exerciseTitle,
-            workoutTitle: workout.title,
-            weightUnit: workout.weightUnit,
-            currentWeight: exercise.weight,
-            startingWeight: exercise.startingWeight,
-            progressWeight: exercise.weight - exercise.startingWeight,
-            progressPercentage: Math.round(
-              ((exercise.weight - exercise.startingWeight) / exercise.startingWeight) * 100,
-            ),
-          }
-        })
-      })
-      .flat()
-  }
-
-  const structuredWorkouts = structureData(workouts ?? [])
+  const { data: exercises, isPending } = useQuery(convexQuery(api.exercises.listExerciseProgress))
 
   return (
     <div className='p-8 flex flex-col gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
       <PageTitle title='Progress' subtitle='Track your workout history and progress over time.' />
 
-      <ProgressTable columns={columns} data={structuredWorkouts} />
+      {isPending ? (
+        <div>Loading...</div>
+      ) : (
+        <ProgressTable columns={columns} data={exercises ?? []} />
+      )}
     </div>
   )
 }
