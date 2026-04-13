@@ -1,11 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
-import { CheckCircle, Dumbbell, Folder, TrendingUp } from 'lucide-react'
+import { CalendarOff, CheckCircle, Dumbbell, Folder, TrendingUp } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import { convexQuery } from '@convex-dev/react-query'
 import { api } from 'convex/_generated/api'
+import { CreateWorkoutForm } from '~/components/CreateWorkoutForm'
 import { EmptyUI } from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'
 import TrackWorkoutForm from '~/components/TrackWorkoutForm'
 import WorkoutCardSkeleton from '~/components/WorkoutCardSkeleton'
+import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
 import StatsCardsList from '~/components/StatsCardsList'
@@ -168,14 +171,34 @@ export default function Homepage() {
             )
           })}
         </div>
-      ) : (
+      ) : allWorkouts.data && allWorkouts.data.length === 0 ? (
         <Card className='bg-secondary'>
           <CardContent>
             <EmptyUI
-              title='No Workouts Scheduled for Today'
-              description="It looks like you don't have any workouts planned for today. Let's get moving and add a workout to your schedule!"
+              title='No Workouts Yet'
+              description='Create your first workout to start tracking your progress.'
               icon={<Folder />}
             />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className='border-dashed'>
+          <CardContent className='flex flex-col items-center gap-4 py-8'>
+            <div className='rounded-xl bg-muted p-3'>
+              <CalendarOff className='size-6 text-muted-foreground' />
+            </div>
+            <div className='text-center'>
+              <h3 className='text-lg font-semibold'>Rest Day</h3>
+              <p className='text-sm text-muted-foreground mt-1'>
+                No workouts scheduled for today. Enjoy the recovery!
+              </p>
+            </div>
+            <div className='flex gap-2'>
+              <Button variant='outline' asChild>
+                <Link to='/workouts'>View all workouts</Link>
+              </Button>
+              <CreateWorkoutForm />
+            </div>
           </CardContent>
         </Card>
       )}
