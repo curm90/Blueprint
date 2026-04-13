@@ -3,6 +3,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import type { QueryClient } from '@tanstack/react-query'
 import appCss from '~/styles/app.css?url'
 import Header from '~/components/Header'
+import { ThemeProvider } from '~/components/ThemeProvider'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -62,8 +63,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <Header />
-        {children}
+        <ThemeProvider>
+          <Header />
+          {children}
+        </ThemeProvider>
         <Scripts />
         <TanStackRouterDevtools />
       </body>
