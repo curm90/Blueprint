@@ -2,11 +2,12 @@ import { convexQuery } from '@convex-dev/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { createColumnHelper, type ColumnDef } from '@tanstack/react-table'
-import { TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowUpDown, TrendingDown, TrendingUp } from 'lucide-react'
 import { api } from 'convex/_generated/api'
 import PageTitle from '~/components/PageTitle'
 import ProgressTable from '~/components/ProgressTable'
 import ProgressTableSkeleton from '~/components/ProgressTableSkeleton'
+import { Button } from '~/components/ui/button'
 
 export const Route = createFileRoute('/progress')({
   component: RouteComponent,
@@ -15,17 +16,30 @@ export const Route = createFileRoute('/progress')({
 const columnHelper = createColumnHelper<ExerciseProgress>()
 const columns: ColumnDef<ExerciseProgress, any>[] = [
   columnHelper.accessor('exerciseTitle', {
-    header: 'Exercise',
+    header: ({ column }) => (
+      <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+        Exercise
+        <ArrowUpDown className='h-4 w-4' />
+      </Button>
+    ),
     cell: (info) => <span className='font-medium'>{info.getValue()}</span>,
   }),
   columnHelper.accessor('workoutTitle', {
-    header: 'Workout',
-    cell: (info) => (
-      <span className='text-muted-foreground'>{info.getValue()}</span>
+    header: ({ column }) => (
+      <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+        Workout
+        <ArrowUpDown className='h-4 w-4' />
+      </Button>
     ),
+    cell: (info) => <span className='text-muted-foreground'>{info.getValue()}</span>,
   }),
   columnHelper.accessor('startingWeight', {
-    header: 'Start',
+    header: ({ column }) => (
+      <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+        Start
+        <ArrowUpDown className='h-4 w-4' />
+      </Button>
+    ),
     cell: (info) => (
       <span>
         {info.getValue()} {info.row.original.weightUnit}
@@ -33,7 +47,12 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
     ),
   }),
   columnHelper.accessor('currentWeight', {
-    header: 'Current',
+    header: ({ column }) => (
+      <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+        Current
+        <ArrowUpDown className='h-4 w-4' />
+      </Button>
+    ),
     cell: (info) => (
       <span className='font-semibold'>
         {info.getValue()} {info.row.original.weightUnit}
@@ -41,7 +60,12 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
     ),
   }),
   columnHelper.accessor('progressWeight', {
-    header: 'Change',
+    header: ({ column }) => (
+      <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+        Change
+        <ArrowUpDown className='h-4 w-4' />
+      </Button>
+    ),
     cell: (info) => {
       const value = info.getValue()
       const unit = info.row.original.weightUnit
@@ -55,7 +79,8 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
       if (value < 0) {
         return (
           <span className='inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-500'>
-            <TrendingDown className='size-3' />{value} {unit}
+            <TrendingDown className='size-3' />
+            {value} {unit}
           </span>
         )
       }
@@ -63,7 +88,12 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
     },
   }),
   columnHelper.accessor('progressPercentage', {
-    header: '%',
+    header: ({ column }) => (
+      <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+        %
+        <ArrowUpDown className='h-4 w-4' />
+      </Button>
+    ),
     cell: (info) => {
       const value = info.getValue()
       if (value > 0) {
