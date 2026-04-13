@@ -2,6 +2,7 @@ import { convexQuery } from '@convex-dev/react-query'
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { createColumnHelper, type ColumnDef } from '@tanstack/react-table'
+import { TrendingDown, TrendingUp } from 'lucide-react'
 import { api } from 'convex/_generated/api'
 import PageTitle from '~/components/PageTitle'
 import ProgressTable from '~/components/ProgressTable'
@@ -34,7 +35,26 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
   }),
   columnHelper.accessor('progressPercentage', {
     header: 'Progress %',
-    cell: (info) => info.getValue(),
+    cell: (info) => {
+      const value = info.getValue()
+      if (value > 0) {
+        return (
+          <span className='flex items-center gap-1 text-emerald-600'>
+            <TrendingUp className='size-4' />
+            {value}%
+          </span>
+        )
+      }
+      if (value < 0) {
+        return (
+          <span className='flex items-center gap-1 text-red-500'>
+            <TrendingDown className='size-4' />
+            {Math.abs(value)}%
+          </span>
+        )
+      }
+      return <span>0%</span>
+    },
   }),
   columnHelper.accessor('progressWeight', {
     header: 'Progress Weight',
@@ -58,9 +78,9 @@ function RouteComponent() {
             currentWeight: exercise.weight,
             startingWeight: exercise.startingWeight,
             progressWeight: exercise.weight - exercise.startingWeight,
-            progressPercentage: `${Math.round(
+            progressPercentage: Math.round(
               ((exercise.weight - exercise.startingWeight) / exercise.startingWeight) * 100,
-            )}% ${exercise.weight > exercise.startingWeight ? 'increase' : 'decrease'}`,
+            ),
           }
         })
       })

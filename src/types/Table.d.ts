@@ -4,7 +4,7 @@ type ExerciseProgress = {
   currentWeight: number
   startingWeight: number
   weightUnit: string
-  progressPercentage: string
+  progressPercentage: number
   progressWeight: number
 }
 
