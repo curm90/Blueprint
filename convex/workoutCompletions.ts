@@ -81,3 +81,62 @@ export const getTodaysCompletions = query({
     return completions
   },
 })
+
+export const getWorkoutStats = query({
+  args: {},
+  handler: async (ctx) => {
+    const allCompletions = await ctx.db.query('workoutCompletions').collect()
+
+    // Total completions across all workouts
+    const totalCompletions = allCompletions.length
+
+    // Completions per workout
+    const completionsByWorkout: Record<string, number> = {}
+    const lastCompletedByWorkout: Record<string, number> = {}
+    for (const c of allCompletions) {
+      const wid = c.workoutId as string
+      completionsByWorkout[wid] = (completionsByWorkout[wid] ?? 0) + 1
+      if (!lastCompletedByWorkout[wid] || c.completedAt > lastCompletedByWorkout[wid]) {
+        lastCompletedByWorkout[wid] = c.completedAt
+      }
+    }
+
+    // Current streak: consecutive days (going backwards from today) with at least one completion
+    const completionDays = new Set(
+      allCompletions.map((c) => {
+        const d = new Date(c.completedAt)
+        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+      }),
+    )
+    let streak = 0
+    const now = new Date()
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(now)
+      d.setDate(d.getDate() - i)
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+      if (completionDays.has(key)) {
+        streak++
+      } else {
+        // Allow skipping today if it's still in progress
+        if (i === 0) continue
+        break
+      }
+    }
+
+    // This week's completions
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
+    startOfWeek.setHours(0, 0, 0, 0)
+    const thisWeekCompletions = allCompletions.filter(
+      (c) => c.completedAt >= startOfWeek.getTime(),
+    ).length
+
+    return {
+      totalCompletions,
+      completionsByWorkout,
+      lastCompletedByWorkout,
+      streak,
+      thisWeekCompletions,
+    }
+  },
+})
