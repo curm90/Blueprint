@@ -10,11 +10,11 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       <label className='flex items-center space-x-2 cursor-pointer'>
         <input
           type='checkbox'
-          className='h-4 w-4 rounded border border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2'
+          className='h-4 w-4 rounded border border-input text-primary focus:ring-ring focus:ring-2'
           ref={ref}
           {...props}
         />
-        {label && <span className='text-sm font-medium text-gray-700'>{label}</span>}
+        {label && <span className='text-sm font-medium text-foreground'>{label}</span>}
       </label>
     )
   },

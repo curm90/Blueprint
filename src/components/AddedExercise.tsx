@@ -8,10 +8,10 @@ export default function AddedExercise({
   weightUnit,
 }: AddedExerciseProps) {
   return (
-    <div className='flex items-center justify-between p-3 border rounded-md bg-gray-50'>
+    <div className='flex items-center justify-between p-3 border rounded-md bg-muted'>
       <div className='flex-1'>
         <p className='font-medium text-sm'>{exercise.exerciseTitle}</p>
-        <p className='text-xs text-gray-600'>
+        <p className='text-xs text-muted-foreground'>
           {exercise.weight} {weightUnit} • {exercise.minReps}-{exercise.maxReps} reps
         </p>
       </div>

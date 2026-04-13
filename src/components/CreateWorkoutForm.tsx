@@ -223,7 +223,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
                         name={field.name}
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
-                        className='flex h-9 w-full rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500'
+                        className='flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 pr-8 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring dark:bg-input/30 appearance-none bg-[url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23888%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E")] bg-[length:16px] bg-[right_8px_center] bg-no-repeat'
                       >
                         <option value='kg'>Kilograms (kg)</option>
                         <option value='lbs'>Pounds (lbs)</option>
@@ -428,7 +428,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
               {/* Exercise List */}
               {exercises.length > 0 && (
                 <div className='mt-6'>
-                  <h4 className='text-sm font-medium mb-3 text-gray-600'>
+                  <h4 className='text-sm font-medium mb-3 text-muted-foreground'>
                     Added Exercises ({exercises.length})
                   </h4>
                   <AddedExerciseList
