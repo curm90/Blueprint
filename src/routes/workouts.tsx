@@ -25,9 +25,7 @@ export const Route = createFileRoute('/workouts')({
 
 function RouteComponent() {
   const { data: workouts } = useSuspenseQuery(convexQuery(api.workouts.listWorkouts, {}))
-  const { data: stats } = useSuspenseQuery(
-    convexQuery(api.workoutCompletions.getWorkoutStats, {}),
-  )
+  const { data: stats } = useSuspenseQuery(convexQuery(api.workoutCompletions.getWorkoutStats, {}))
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
   function toggleExpand(id: Id<'workouts'>) {

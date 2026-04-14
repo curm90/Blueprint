@@ -14,9 +14,7 @@ import StatsCardsList from '~/components/StatsCardsList'
 
 export default function Homepage() {
   const { data: allWorkouts } = useSuspenseQuery(convexQuery(api.workouts.listWorkouts, {}))
-  const { data: stats } = useSuspenseQuery(
-    convexQuery(api.workoutCompletions.getWorkoutStats, {}),
-  )
+  const { data: stats } = useSuspenseQuery(convexQuery(api.workoutCompletions.getWorkoutStats, {}))
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()
   const todaysWorkouts = allWorkouts?.filter((w) => w.selectedDays.includes(today))
@@ -53,8 +51,7 @@ export default function Homepage() {
         <div className='flex flex-col gap-4'>
           {todaysWorkouts.map((workout) => {
             const isCompleted = completedWorkoutIds.has(workout._id)
-            const workoutCompletionCount =
-              stats?.completionsByWorkout[workout._id as string] ?? 0
+            const workoutCompletionCount = stats?.completionsByWorkout[workout._id as string] ?? 0
             const lastCompleted = stats?.lastCompletedByWorkout[workout._id as string]
             const totalWeightProgress = workout.exercises.reduce(
               (sum, ex) => sum + (ex.weight - ex.startingWeight),

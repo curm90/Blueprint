@@ -11,9 +11,7 @@ import { Button } from '~/components/ui/button'
 export const Route = createFileRoute('/progress')({
   component: RouteComponent,
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(
-      convexQuery(api.exercises.listExerciseProgress, {}),
-    )
+    await context.queryClient.ensureQueryData(convexQuery(api.exercises.listExerciseProgress, {}))
   },
 })
 
