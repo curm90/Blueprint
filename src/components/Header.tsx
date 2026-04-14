@@ -1,10 +1,23 @@
 import { Link } from '@tanstack/react-router'
 import { Image } from '@unpic/react'
+import { LogOut } from 'lucide-react'
+import { authClient } from '~/lib/auth-client'
 import ThemeToggle from '~/components/ThemeToggle'
+import { Button } from '~/components/ui/button'
 import { Separator } from '~/components/ui/separator'
 import { links } from '~/lib/constants'
 
 export default function Header() {
+  const handleSignOut = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          location.reload()
+        },
+      },
+    })
+  }
+
   return (
     <header>
       <nav className='flex justify-between px-4 sm:px-8 py-4 border border-bottom'>
@@ -24,6 +37,9 @@ export default function Header() {
               </li>
             ))}
           </ul>
+          <Button variant='ghost' size='icon' onClick={handleSignOut} title='Sign out'>
+            <LogOut className='size-4' />
+          </Button>
         </div>
       </nav>
     </header>
