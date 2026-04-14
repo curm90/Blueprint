@@ -10,7 +10,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
       <label className='flex items-center space-x-2 cursor-pointer'>
         <input
           type='checkbox'
-          className='h-4 w-4 rounded border border-input text-primary focus:ring-ring focus:ring-2'
+          className='h-4 w-4 appearance-none rounded border border-input bg-background checked:bg-primary checked:border-primary focus:ring-ring focus:ring-2 relative checked:after:content-["✓"] checked:after:text-primary-foreground checked:after:text-[10px] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:font-bold'
           ref={ref}
           {...props}
         />
