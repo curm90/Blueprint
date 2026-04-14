@@ -1,5 +1,5 @@
 import { convexQuery } from '@convex-dev/react-query'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Calendar, ChevronDown, Dumbbell, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
@@ -9,18 +9,23 @@ import { CreateWorkoutForm, EditWorkoutForm } from '~/components/CreateWorkoutFo
 import DeleteWorkoutDialog from '~/components/DeleteWorkoutDialog'
 import { EmptyUI } from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'
-import WorkoutsPageSkeleton from '~/components/WorkoutsPageSkeleton'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
 import { DAYS_OF_WEEK } from '~/lib/constants'
 
 export const Route = createFileRoute('/workouts')({
   component: RouteComponent,
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(convexQuery(api.workouts.listWorkouts, {})),
+      context.queryClient.ensureQueryData(convexQuery(api.workoutCompletions.getWorkoutStats, {})),
+    ])
+  },
 })
 
 function RouteComponent() {
-  const { data: workouts, isPending, error } = useQuery(convexQuery(api.workouts.listWorkouts))
-  const stats = useQuery(convexQuery(api.workoutCompletions.getWorkoutStats, {}))
+  const { data: workouts } = useSuspenseQuery(convexQuery(api.workouts.listWorkouts, {}))
+  const { data: stats } = useSuspenseQuery(convexQuery(api.workoutCompletions.getWorkoutStats, {}))
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
   function toggleExpand(id: Id<'workouts'>) {
@@ -35,19 +40,13 @@ function RouteComponent() {
     })
   }
 
-  if (error) {
-    return <div>Error: {error.message}</div>
-  }
-
   return (
     <div className='p-4 pb-24 sm:p-8 sm:pb-8 flex flex-col gap-8 sm:gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
       <div className='flex items-center justify-between'>
         <PageTitle title='My Workouts' />
         <CreateWorkoutForm />
       </div>
-      {isPending ? (
-        <WorkoutsPageSkeleton />
-      ) : workouts.length === 0 ? (
+      {workouts.length === 0 ? (
         <Card className='bg-secondary'>
           <CardContent>
             <EmptyUI title='No workouts found.' description='Create your first workout here!' />
@@ -56,8 +55,8 @@ function RouteComponent() {
       ) : (
         <div className='flex flex-col gap-4'>
           {workouts.map((workout) => {
-            const completionCount = stats.data?.completionsByWorkout[workout._id as string] ?? 0
-            const lastCompleted = stats.data?.lastCompletedByWorkout[workout._id as string]
+            const completionCount = stats?.completionsByWorkout[workout._id as string] ?? 0
+            const lastCompleted = stats?.lastCompletedByWorkout[workout._id as string]
             const totalWeightProgress = workout.exercises.reduce(
               (sum, ex) => sum + (ex.weight - ex.startingWeight),
               0,

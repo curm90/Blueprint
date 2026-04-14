@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
+import { getAuthUserId, getAuthUserIdOrNull } from './helpers'
 
 export const addWorkout = mutation({
   args: {
@@ -18,16 +19,16 @@ export const addWorkout = mutation({
   },
 
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx)
     const { title, selectedDays, weightUnit, exercises } = args
 
     const id = await ctx.db.insert('workouts', {
+      userId,
       title,
       selectedDays,
       weightUnit,
       exercises,
     })
-
-    console.log({ id })
 
     return id
   },
@@ -36,7 +37,12 @@ export const addWorkout = mutation({
 export const listWorkouts = query({
   args: {},
   handler: async (ctx) => {
-    const workouts = await ctx.db.query('workouts').collect()
+    const userId = await getAuthUserIdOrNull(ctx)
+    if (!userId) return []
+    const workouts = await ctx.db
+      .query('workouts')
+      .withIndex('by_userId', (q) => q.eq('userId', userId))
+      .collect()
 
     return workouts
   },
@@ -47,12 +53,18 @@ export const deleteWorkoutById = mutation({
     id: v.id('workouts'),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx)
     const { id } = args
+
+    const workout = await ctx.db.get(id)
+    if (!workout || workout.userId !== userId) {
+      throw new Error('Workout not found')
+    }
 
     // Delete all completions for this workout
     const completions = await ctx.db
       .query('workoutCompletions')
-      .withIndex('by_workout', (q) => q.eq('workoutId', id))
+      .withIndex('by_userId_and_workout', (q) => q.eq('userId', userId).eq('workoutId', id))
       .collect()
     for (const completion of completions) {
       await ctx.db.delete(completion._id)
@@ -81,8 +93,14 @@ export const editWorkoutById = mutation({
     }),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx)
     const { id, updates } = args
 
-    await ctx.db.patch('workouts', id, updates)
+    const workout = await ctx.db.get(id)
+    if (!workout || workout.userId !== userId) {
+      throw new Error('Workout not found')
+    }
+
+    await ctx.db.patch(id, updates)
   },
 })

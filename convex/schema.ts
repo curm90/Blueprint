@@ -11,6 +11,7 @@ export default defineSchema({
   }),
 
   workouts: defineTable({
+    userId: v.string(),
     title: v.string(),
     selectedDays: v.array(v.string()), // ['monday', 'tuesday', etc.]
     weightUnit: v.string(), // 'kg' or 'lbs'
@@ -23,9 +24,10 @@ export default defineSchema({
         maxReps: v.number(),
       }),
     ),
-  }),
+  }).index('by_userId', ['userId']),
 
   workoutCompletions: defineTable({
+    userId: v.string(),
     workoutId: v.id('workouts'),
     completedAt: v.number(),
     exercises: v.array(
@@ -40,6 +42,7 @@ export default defineSchema({
       }),
     ),
   })
-    .index('by_workout', ['workoutId'])
-    .index('by_completion', ['completedAt']),
+    .index('by_userId', ['userId'])
+    .index('by_userId_and_workout', ['userId', 'workoutId'])
+    .index('by_userId_and_completion', ['userId', 'completedAt']),
 })

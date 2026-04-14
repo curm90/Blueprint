@@ -7,19 +7,16 @@ type StatsCardProps = {
   bg: string
 }
 
+type StatsData = {
+  totalCompletions: number
+  completionsByWorkout: Record<string, number>
+  lastCompletedByWorkout: Record<string, number>
+  streak: number
+  thisWeekCompletions: number
+}
+
 type StatsCardsListProps = {
-  stats: {
-    isLoading: boolean
-    data:
-      | {
-          totalCompletions: number
-          completionsByWorkout: Record<string, number>
-          lastCompletedByWorkout: Record<string, number>
-          streak: number
-          thisWeekCompletions: number
-        }
-      | undefined
-  }
+  stats: StatsData
   todaysWorkouts?: Workout[]
   completedWorkoutIds: Set<string>
 }

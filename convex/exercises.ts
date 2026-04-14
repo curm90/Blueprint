@@ -1,9 +1,15 @@
 import { query } from './_generated/server'
+import { getAuthUserIdOrNull } from './helpers'
 
 export const listExerciseProgress = query({
   args: {},
   handler: async (ctx) => {
-    const workouts = await ctx.db.query('workouts').collect()
+    const userId = await getAuthUserIdOrNull(ctx)
+    if (!userId) return []
+    const workouts = await ctx.db
+      .query('workouts')
+      .withIndex('by_userId', (q) => q.eq('userId', userId))
+      .collect()
 
     return workouts.flatMap((workout) =>
       workout.exercises.map((exercise) => ({
