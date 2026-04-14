@@ -1,5 +1,5 @@
 import { linkOptions } from '@tanstack/react-router'
-import { Calendar, Dumbbell, TrendingUp, type LucideIcon } from 'lucide-react'
+import { Calendar, Dumbbell, TrendingUp } from 'lucide-react'
 
 export const DAYS_OF_WEEK = [
   { value: 'monday', shortLabel: 'Mon', label: 'Monday' },
