@@ -7,7 +7,7 @@ import { links } from '~/lib/constants'
 export default function Header() {
   return (
     <header>
-      <nav className='flex justify-between px-8 py-4 border border-bottom'>
+      <nav className='flex justify-between px-4 sm:px-8 py-4 border border-bottom'>
         <Link to='/' className='flex items-center gap-2'>
           <Image src='logo.png' width={32} height={32} className='dark:invert' />
           <h4 className='text-foreground'>Blueprint</h4>
