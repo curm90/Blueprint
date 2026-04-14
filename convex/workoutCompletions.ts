@@ -1,5 +1,6 @@
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
+import { getAuthUserId, getAuthUserIdOrNull } from './helpers'
 
 export const trackWorkout = mutation({
   args: {
@@ -17,10 +18,18 @@ export const trackWorkout = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx)
     const { workoutId, results } = args
+
+    // Verify the workout belongs to the current user
+    const workout = await ctx.db.get(workoutId)
+    if (!workout || workout.userId !== userId) {
+      throw new Error('Workout not found')
+    }
 
     // Insert the completion record
     await ctx.db.insert('workoutCompletions', {
+      userId,
       workoutId,
       completedAt: Date.now(),
       exercises: results.map((result) => ({
@@ -29,14 +38,10 @@ export const trackWorkout = mutation({
       })),
     })
 
-    // Update the workout's exercise weights based on feedback
-    const workout = await ctx.db.get(workoutId)
-    if (!workout) return
-
     // For "just-right", check if last 3 completions are all "just-right"
     const recentCompletions = await ctx.db
       .query('workoutCompletions')
-      .withIndex('by_workout', (q) => q.eq('workoutId', workoutId))
+      .withIndex('by_userId_and_workout', (q) => q.eq('userId', userId).eq('workoutId', workoutId))
       .order('desc')
       .take(3)
 
@@ -74,9 +79,13 @@ export const getTodaysCompletions = query({
     startOfDay: v.number(),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserIdOrNull(ctx)
+    if (!userId) return []
     const completions = await ctx.db
       .query('workoutCompletions')
-      .withIndex('by_completion', (q) => q.gte('completedAt', args.startOfDay))
+      .withIndex('by_userId_and_completion', (q) =>
+        q.eq('userId', userId).gte('completedAt', args.startOfDay),
+      )
       .collect()
     return completions
   },
@@ -85,7 +94,20 @@ export const getTodaysCompletions = query({
 export const getWorkoutStats = query({
   args: {},
   handler: async (ctx) => {
-    const allCompletions = await ctx.db.query('workoutCompletions').collect()
+    const userId = await getAuthUserIdOrNull(ctx)
+    if (!userId) {
+      return {
+        totalCompletions: 0,
+        completionsByWorkout: {},
+        lastCompletedByWorkout: {},
+        streak: 0,
+        thisWeekCompletions: 0,
+      }
+    }
+    const allCompletions = await ctx.db
+      .query('workoutCompletions')
+      .withIndex('by_userId', (q) => q.eq('userId', userId))
+      .collect()
 
     // Total completions across all workouts
     const totalCompletions = allCompletions.length
