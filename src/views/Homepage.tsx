@@ -197,7 +197,7 @@ export default function Homepage() {
               <Button variant='outline' asChild>
                 <Link to='/workouts'>View all workouts</Link>
               </Button>
-              <CreateWorkoutForm />
+              <CreateWorkoutForm compact={false} />
             </div>
           </CardContent>
         </Card>

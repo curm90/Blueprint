@@ -26,7 +26,7 @@ export function EmptyUI({ title, description, icon }: EmptyUIProps) {
         <EmptyDescription>{description}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent className='flex-row justify-center gap-2'>
-        <CreateWorkoutForm />
+        <CreateWorkoutForm compact={false} />
       </EmptyContent>
     </Empty>
   )

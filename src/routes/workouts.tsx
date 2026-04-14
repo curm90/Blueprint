@@ -69,7 +69,7 @@ function RouteComponent() {
                 <CardHeader className='cursor-pointer' onClick={() => toggleExpand(workout._id)}>
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-3'>
-                      <div className='rounded-lg bg-primary/10 p-2'>
+                      <div className='rounded-lg bg-primary/10 p-2 hidden sm:flex'>
                         <Dumbbell className='size-5 text-primary' />
                       </div>
                       <div>

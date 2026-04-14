@@ -465,13 +465,20 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
 }
 
 // Backward compatibility wrapper for create mode
-export function CreateWorkoutForm() {
+export function CreateWorkoutForm({ compact = true }: { compact?: boolean }) {
   return (
     <WorkoutForm mode='create'>
-      <Button size='icon' className='sm:h-8 sm:w-auto sm:gap-1.5 sm:px-2.5'>
-        <Plus />
-        <span className='hidden sm:inline'>Create Workout</span>
-      </Button>
+      {compact ? (
+        <Button size='icon' className='sm:h-8 sm:w-auto sm:gap-1.5 sm:px-2.5'>
+          <Plus />
+          <span className='hidden sm:inline'>Create Workout</span>
+        </Button>
+      ) : (
+        <Button>
+          <Plus />
+          Create Workout
+        </Button>
+      )}
     </WorkoutForm>
   )
 }
