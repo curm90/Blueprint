@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { CalendarOff, CheckCircle, Dumbbell, Folder, TrendingUp } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { convexQuery } from '@convex-dev/react-query'
@@ -7,28 +7,29 @@ import { CreateWorkoutForm } from '~/components/CreateWorkoutForm'
 import { EmptyUI } from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'
 import TrackWorkoutForm from '~/components/TrackWorkoutForm'
-import WorkoutCardSkeleton from '~/components/WorkoutCardSkeleton'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
 import StatsCardsList from '~/components/StatsCardsList'
 
 export default function Homepage() {
-  const allWorkouts = useQuery(convexQuery(api.workouts.listWorkouts))
-  const stats = useQuery(convexQuery(api.workoutCompletions.getWorkoutStats, {}))
+  const { data: allWorkouts } = useSuspenseQuery(convexQuery(api.workouts.listWorkouts, {}))
+  const { data: stats } = useSuspenseQuery(
+    convexQuery(api.workoutCompletions.getWorkoutStats, {}),
+  )
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()
-  const todaysWorkouts = allWorkouts.data?.filter((w) => w.selectedDays.includes(today))
+  const todaysWorkouts = allWorkouts?.filter((w) => w.selectedDays.includes(today))
 
   const startOfDay = new Date()
   startOfDay.setHours(0, 0, 0, 0)
-  const todaysCompletions = useQuery(
+  const { data: todaysCompletions } = useSuspenseQuery(
     convexQuery(api.workoutCompletions.getTodaysCompletions, {
       startOfDay: startOfDay.getTime(),
     }),
   )
 
-  const completedWorkoutIds = new Set(todaysCompletions.data?.map((c) => c.workoutId) ?? [])
+  const completedWorkoutIds = new Set(todaysCompletions?.map((c) => c.workoutId) ?? [])
 
   const todayDate = new Date().toLocaleDateString(undefined, {
     month: 'long',
@@ -48,18 +49,13 @@ export default function Homepage() {
       />
 
       {/* Workout cards */}
-      {allWorkouts.isLoading ? (
-        <div className='flex flex-col gap-4'>
-          <WorkoutCardSkeleton />
-          <WorkoutCardSkeleton />
-        </div>
-      ) : todaysWorkouts && todaysWorkouts.length > 0 ? (
+      {todaysWorkouts && todaysWorkouts.length > 0 ? (
         <div className='flex flex-col gap-4'>
           {todaysWorkouts.map((workout) => {
             const isCompleted = completedWorkoutIds.has(workout._id)
             const workoutCompletionCount =
-              stats.data?.completionsByWorkout[workout._id as string] ?? 0
-            const lastCompleted = stats.data?.lastCompletedByWorkout[workout._id as string]
+              stats?.completionsByWorkout[workout._id as string] ?? 0
+            const lastCompleted = stats?.lastCompletedByWorkout[workout._id as string]
             const totalWeightProgress = workout.exercises.reduce(
               (sum, ex) => sum + (ex.weight - ex.startingWeight),
               0,
@@ -171,7 +167,7 @@ export default function Homepage() {
             )
           })}
         </div>
-      ) : allWorkouts.data && allWorkouts.data.length === 0 ? (
+      ) : allWorkouts && allWorkouts.length === 0 ? (
         <Card className='bg-secondary'>
           <CardContent>
             <EmptyUI

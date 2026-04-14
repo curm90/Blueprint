@@ -1,16 +1,20 @@
 import { convexQuery } from '@convex-dev/react-query'
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { createColumnHelper, type ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown, TrendingDown, TrendingUp } from 'lucide-react'
 import { api } from 'convex/_generated/api'
 import PageTitle from '~/components/PageTitle'
 import ProgressTable from '~/components/ProgressTable'
-import ProgressTableSkeleton from '~/components/ProgressTableSkeleton'
 import { Button } from '~/components/ui/button'
 
 export const Route = createFileRoute('/progress')({
   component: RouteComponent,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(
+      convexQuery(api.exercises.listExerciseProgress, {}),
+    )
+  },
 })
 
 const columnHelper = createColumnHelper<ExerciseProgress>()
@@ -109,16 +113,12 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
 ]
 
 function RouteComponent() {
-  const { data: exercises, isPending } = useQuery(convexQuery(api.exercises.listExerciseProgress))
+  const { data: exercises } = useSuspenseQuery(convexQuery(api.exercises.listExerciseProgress, {}))
 
   return (
     <div className='p-4 sm:p-8 pb-24 sm:pb-8 flex flex-col gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
       <PageTitle title='Progress' subtitle='Track your workout history and progress over time.' />
-      {isPending ? (
-        <ProgressTableSkeleton />
-      ) : (
-        <ProgressTable columns={columns} data={exercises ?? []} />
-      )}
+      <ProgressTable columns={columns} data={exercises ?? []} />
     </div>
   )
 }

@@ -1,5 +1,4 @@
 import { Calendar, Trophy, Flame, Target } from 'lucide-react'
-import StatsRowSkeleton from './StatsRowSkeleton'
 import StatsCard from './StatsCard'
 
 export default function StatsCardsList({
@@ -10,15 +9,15 @@ export default function StatsCardsList({
   const statCards = [
     {
       label: 'Current Streak',
-      value: stats.data?.streak ?? 0,
-      suffix: stats.data?.streak === 1 ? 'day' : 'days',
+      value: stats.streak ?? 0,
+      suffix: stats.streak === 1 ? 'day' : 'days',
       icon: <Flame className='size-4' />,
       color: 'text-orange-500',
       bg: 'bg-orange-500/10',
     },
     {
       label: 'This Week',
-      value: stats.data?.thisWeekCompletions ?? 0,
+      value: stats.thisWeekCompletions ?? 0,
       suffix: 'sessions',
       icon: <Calendar className='size-4' />,
       color: 'text-blue-500',
@@ -26,7 +25,7 @@ export default function StatsCardsList({
     },
     {
       label: 'Total Completions',
-      value: stats.data?.totalCompletions ?? 0,
+      value: stats.totalCompletions ?? 0,
       suffix: 'all time',
       icon: <Trophy className='size-4' />,
       color: 'text-amber-500',
@@ -42,9 +41,7 @@ export default function StatsCardsList({
     },
   ]
 
-  return stats.isLoading ? (
-    <StatsRowSkeleton />
-  ) : (
+  return (
     <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
       {statCards.map((stat) => (
         <StatsCard key={stat.label} {...stat} />
