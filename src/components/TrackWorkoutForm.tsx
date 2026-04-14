@@ -62,7 +62,7 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
       <DialogTrigger asChild>
         <Button className='w-fit flex justify-self-end mt-4'>Track Workout</Button>
       </DialogTrigger>
-      <DialogContent className='sm:max-w-md'>
+      <DialogContent className='max-w-[calc(100%-8rem)] sm:max-w-md'>
         <DialogHeader>
           <DialogTitle>{workout.title}</DialogTitle>
           {/* Progress */}
