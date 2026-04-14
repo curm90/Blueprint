@@ -1,8 +1,8 @@
-import { Link } from '@tanstack/react-router'
+import { Link, linkOptions } from '@tanstack/react-router'
 import ThemeToggle from '~/components/ThemeToggle'
 import { Separator } from '~/components/ui/separator'
 
-const links = [
+const links = linkOptions([
   {
     label: 'Today',
     to: '/',
@@ -15,7 +15,7 @@ const links = [
     label: 'Progress',
     to: '/progress',
   },
-]
+])
 
 export default function Header() {
   return (
@@ -30,7 +30,9 @@ export default function Header() {
           <ul className='flex items-center gap-4'>
             {links.map((link) => (
               <li key={link.to}>
-                <Link to={link.to}>{link.label}</Link>
+                <Link to={link.to} activeProps={{ className: 'text-sidebar-primary' }}>
+                  {link.label}
+                </Link>
               </li>
             ))}
           </ul>
