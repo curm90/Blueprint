@@ -1,21 +1,7 @@
-import { Link, linkOptions } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import ThemeToggle from '~/components/ThemeToggle'
 import { Separator } from '~/components/ui/separator'
-
-const links = linkOptions([
-  {
-    label: 'Today',
-    to: '/',
-  },
-  {
-    label: 'Workouts',
-    to: '/workouts',
-  },
-  {
-    label: 'Progress',
-    to: '/progress',
-  },
-])
+import { links } from '~/lib/constants'
 
 export default function Header() {
   return (
@@ -26,8 +12,8 @@ export default function Header() {
         </div>
         <div className='flex items-center gap-4'>
           <ThemeToggle />
-          <Separator orientation='vertical' className='h-6' />
-          <ul className='flex items-center gap-4'>
+          <Separator orientation='vertical' className='h-6 hidden sm:block sm:self-auto!' />
+          <ul className='items-center gap-4 hidden sm:flex'>
             {links.map((link) => (
               <li key={link.to}>
                 <Link to={link.to} activeProps={{ className: 'text-sidebar-primary' }}>

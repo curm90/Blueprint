@@ -193,7 +193,7 @@ export default function Homepage() {
                 No workouts scheduled for today. Enjoy the recovery!
               </p>
             </div>
-            <div className='flex gap-2'>
+            <div className='flex flex-col sm:flex-row gap-2'>
               <Button variant='outline' asChild>
                 <Link to='/workouts'>View all workouts</Link>
               </Button>

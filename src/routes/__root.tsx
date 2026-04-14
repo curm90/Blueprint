@@ -3,6 +3,7 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import type { QueryClient } from '@tanstack/react-query'
 import appCss from '~/styles/app.css?url'
 import Header from '~/components/Header'
+import FooterNav from '~/components/FooterNav'
 import { ThemeProvider } from '~/components/ThemeProvider'
 
 export const Route = createRootRouteWithContext<{
@@ -66,6 +67,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ThemeProvider>
           <Header />
           {children}
+          <FooterNav />
         </ThemeProvider>
         <Scripts />
         <TanStackRouterDevtools />
