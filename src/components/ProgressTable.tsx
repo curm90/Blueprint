@@ -43,7 +43,7 @@ export default function ProgressTable<TData, TValue>({
     <div>
       <Input
         placeholder='Search by exercise...'
-        className='w-100 mb-4'
+        className='w-full mb-4 sm:w-100'
         value={(table.getColumn('exerciseTitle')?.getFilterValue() as string) ?? ''}
         onChange={(e) => table.getColumn('exerciseTitle')?.setFilterValue(e.target.value)}
       />

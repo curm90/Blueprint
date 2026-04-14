@@ -112,7 +112,7 @@ function RouteComponent() {
   const { data: exercises, isPending } = useQuery(convexQuery(api.exercises.listExerciseProgress))
 
   return (
-    <div className='p-8 pb-24 sm:pb-8 flex flex-col gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
+    <div className='p-4 sm:p-8 pb-24 sm:pb-8 flex flex-col gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
       <PageTitle title='Progress' subtitle='Track your workout history and progress over time.' />
       {isPending ? (
         <ProgressTableSkeleton />
