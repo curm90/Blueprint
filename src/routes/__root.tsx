@@ -1,13 +1,31 @@
-import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRouteWithContext,
+  redirect,
+  useRouteContext,
+  useRouterState,
+} from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
+import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
+import { ConvexQueryClient } from '@convex-dev/react-query'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import type { QueryClient } from '@tanstack/react-query'
 import appCss from '~/styles/app.css?url'
 import Header from '~/components/Header'
 import FooterNav from '~/components/FooterNav'
 import { ThemeProvider } from '~/components/ThemeProvider'
+import { authClient } from '~/lib/auth-client'
+import { getToken } from '~/lib/auth-server'
+
+const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
+  return await getToken()
+})
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
+  convexQueryClient: ConvexQueryClient
 }>()({
   head: () => ({
     meta: [
@@ -45,19 +63,61 @@ export const Route = createRootRouteWithContext<{
       { rel: 'icon', href: '/favicon.ico' },
     ],
   }),
+  beforeLoad: async (ctx) => {
+    const token = await getAuth()
+
+    // all queries, mutations and actions through TanStack Query will be
+    // authenticated during SSR if we have a valid token
+    if (token) {
+      // During SSR only (the only time serverHttpClient exists),
+      // set the auth token to make HTTP queries with.
+      ctx.context.convexQueryClient.serverHttpClient?.setAuth(token)
+    }
+
+    // Redirect unauthenticated users to login (except on the login page itself)
+    if (!token && ctx.location.pathname !== '/login') {
+      throw redirect({ to: '/login' })
+    }
+
+    return {
+      isAuthenticated: !!token,
+      token,
+    }
+  },
   notFoundComponent: () => <div>Route not found</div>,
   component: RootComponent,
 })
 
+// Helper to check if the current path is the login page
+function isLoginPath(pathname: string) {
+  return pathname === '/login'
+}
+
 function RootComponent() {
+  const context = useRouteContext({ from: Route.id })
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const showChrome = !isLoginPath(pathname)
+
   return (
-    <RootDocument>
-      <Outlet />
-    </RootDocument>
+    <ConvexBetterAuthProvider
+      client={context.convexQueryClient.convexClient}
+      authClient={authClient}
+      initialToken={context.token}
+    >
+      <RootDocument showChrome={showChrome}>
+        <Outlet />
+      </RootDocument>
+    </ConvexBetterAuthProvider>
   )
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument({
+  children,
+  showChrome,
+}: {
+  children: React.ReactNode
+  showChrome: boolean
+}) {
   return (
     <html>
       <head>
@@ -65,9 +125,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <ThemeProvider>
-          <Header />
+          {showChrome && <Header />}
           {children}
-          <FooterNav />
+          {showChrome && <FooterNav />}
         </ThemeProvider>
         <Scripts />
         <TanStackRouterDevtools />
