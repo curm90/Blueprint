@@ -40,7 +40,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className='p-8 flex flex-col gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
+    <div className='p-8 pb-24 sm:pb-8 flex flex-col gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
       <div className='flex items-center justify-between'>
         <PageTitle title='My Workouts' />
         <CreateWorkoutForm />

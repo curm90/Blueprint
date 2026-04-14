@@ -7,7 +7,7 @@ export const Route = createFileRoute('/')({
 
 function Home() {
   return (
-    <main className='p-8 flex flex-col gap-16 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
+    <main className='p-8 pb-24 sm:pb-8 flex flex-col gap-16 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
       <Homepage />
     </main>
   )
