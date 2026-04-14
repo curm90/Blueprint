@@ -40,7 +40,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className='p-8 flex flex-col gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
+    <div className='p-4 pb-24 sm:p-8 sm:pb-8 flex flex-col gap-8 sm:gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
       <div className='flex items-center justify-between'>
         <PageTitle title='My Workouts' />
         <CreateWorkoutForm />
@@ -69,7 +69,7 @@ function RouteComponent() {
                 <CardHeader className='cursor-pointer' onClick={() => toggleExpand(workout._id)}>
                   <div className='flex items-center justify-between'>
                     <div className='flex items-center gap-3'>
-                      <div className='rounded-lg bg-primary/10 p-2'>
+                      <div className='rounded-lg bg-primary/10 p-2 hidden sm:flex'>
                         <Dumbbell className='size-5 text-primary' />
                       </div>
                       <div>
@@ -80,7 +80,10 @@ function RouteComponent() {
                       </div>
                     </div>
                     <div className='flex items-center gap-2'>
-                      <div className='flex items-center gap-2' onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className='flex items-center gap-1 sm:gap-2'
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <EditWorkoutForm
                           workoutId={workout._id}
                           initialData={{
@@ -111,7 +114,12 @@ function RouteComponent() {
                             key={day}
                             className='rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary'
                           >
-                            {DAYS_OF_WEEK.find((d) => d.value === day)?.label ?? day}
+                            <span className='sm:hidden'>
+                              {DAYS_OF_WEEK.find((d) => d.value === day)?.shortLabel ?? day}
+                            </span>
+                            <span className='hidden sm:inline'>
+                              {DAYS_OF_WEEK.find((d) => d.value === day)?.label ?? day}
+                            </span>
                           </span>
                         ))}
                       </div>
@@ -121,14 +129,16 @@ function RouteComponent() {
                         {workout.exercises.map((exercise) => (
                           <li
                             key={exercise.exerciseTitle}
-                            className='flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5'
+                            className='flex items-center justify-between rounded-lg border border-border/50 px-2.5 py-2 sm:px-3 sm:py-2.5'
                           >
-                            <h4 className='text-sm font-medium'>{exercise.exerciseTitle}</h4>
-                            <div className='flex items-center gap-2 text-sm'>
+                            <h4 className='text-sm font-medium truncate min-w-0'>
+                              {exercise.exerciseTitle}
+                            </h4>
+                            <div className='flex items-center gap-2 text-sm shrink-0'>
                               <span className='rounded-md bg-primary/10 px-2 py-0.5 font-semibold text-primary'>
                                 {exercise.weight} {workout.weightUnit}
                               </span>
-                              <span className='text-muted-foreground'>
+                              <span className='hidden sm:inline text-muted-foreground'>
                                 {exercise.minReps}-{exercise.maxReps} reps
                               </span>
                             </div>

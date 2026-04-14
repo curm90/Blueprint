@@ -17,7 +17,7 @@ export default function DeleteWorkoutDialog({ workoutId }: { workoutId: Id<'work
   return (
     <Dialog open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
       <DialogTrigger asChild>
-        <Button variant='outline'>
+        <Button variant='outline' size='icon-sm' className='sm:size-8'>
           <Trash />
         </Button>
       </DialogTrigger>
