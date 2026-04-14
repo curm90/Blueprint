@@ -80,7 +80,10 @@ function RouteComponent() {
                       </div>
                     </div>
                     <div className='flex items-center gap-2'>
-                      <div className='flex items-center gap-1 sm:gap-2' onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className='flex items-center gap-1 sm:gap-2'
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <EditWorkoutForm
                           workoutId={workout._id}
                           initialData={{
@@ -128,7 +131,9 @@ function RouteComponent() {
                             key={exercise.exerciseTitle}
                             className='flex items-center justify-between rounded-lg border border-border/50 px-2.5 py-2 sm:px-3 sm:py-2.5'
                           >
-                            <h4 className='text-sm font-medium truncate min-w-0'>{exercise.exerciseTitle}</h4>
+                            <h4 className='text-sm font-medium truncate min-w-0'>
+                              {exercise.exerciseTitle}
+                            </h4>
                             <div className='flex items-center gap-2 text-sm shrink-0'>
                               <span className='rounded-md bg-primary/10 px-2 py-0.5 font-semibold text-primary'>
                                 {exercise.weight} {workout.weightUnit}

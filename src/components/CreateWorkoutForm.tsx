@@ -468,7 +468,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
 export function CreateWorkoutForm() {
   return (
     <WorkoutForm mode='create'>
-      <Button size='icon' className='sm:size-auto sm:px-4'>
+      <Button size='icon' className='sm:h-8 sm:w-auto sm:gap-1.5 sm:px-2.5'>
         <Plus />
         <span className='hidden sm:inline'>Create Workout</span>
       </Button>

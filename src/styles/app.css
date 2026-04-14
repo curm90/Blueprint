@@ -22,6 +22,12 @@
   }
   html {
     @apply font-sans bg-background;
+    color-scheme: light dark;
+    scrollbar-color: var(--muted) transparent;
+  }
+
+  .dark {
+    scrollbar-color: var(--muted) transparent;
   }
 }
 
