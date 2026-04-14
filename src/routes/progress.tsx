@@ -113,7 +113,6 @@ function RouteComponent() {
   return (
     <div className='p-8 flex flex-col gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
       <PageTitle title='Progress' subtitle='Track your workout history and progress over time.' />
-
       {isPending ? (
         <ProgressTableSkeleton />
       ) : (
