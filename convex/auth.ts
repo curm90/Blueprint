@@ -17,10 +17,21 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
   return betterAuth({
     baseURL: siteUrl,
     database: authComponent.adapter(ctx),
-    // Configure simple, non-verified email/password to get started
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false,
+      sendResetPassword: async ({ user, url }) => {
+        // TODO: send password reset email
+        console.log('Reset password URL for', user.email, url)
+      },
+    },
+    emailVerification: {
+      sendVerificationEmail: async ({ user, url }) => {
+        // TODO: replace with a real email sender (e.g. Resend, Postmark)
+        console.log('Verification URL for', user.email, url)
+      },
+      sendOnSignUp: false,
+      autoSignInAfterVerification: true,
     },
     plugins: [
       // The Convex plugin is required for Convex compatibility
