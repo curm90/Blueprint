@@ -1,5 +1,5 @@
 import { linkOptions } from '@tanstack/react-router'
-import { Calendar, Dumbbell, TrendingUp } from 'lucide-react'
+import { Calendar, Dumbbell, TrendingUp, User } from 'lucide-react'
 
 export const DAYS_OF_WEEK = [
   { value: 'monday', shortLabel: 'Mon', label: 'Monday' },
@@ -26,5 +26,10 @@ export const links: Link[] = linkOptions([
     to: '/progress',
     label: 'Progress',
     icon: TrendingUp,
+  },
+  {
+    to: '/profile',
+    label: 'Profile',
+    icon: User,
   },
 ])
