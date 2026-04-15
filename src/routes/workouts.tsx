@@ -41,7 +41,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className='p-4 pb-24 sm:p-8 sm:pb-8 flex flex-col gap-8 sm:gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
+    <>
       <div className='flex items-center justify-between'>
         <PageTitle title='My Workouts' />
         <CreateWorkoutForm />
@@ -183,6 +183,6 @@ function RouteComponent() {
           })}
         </div>
       )}
-    </div>
+    </>
   )
 }
