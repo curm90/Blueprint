@@ -10,6 +10,7 @@ import { Input } from './ui/input'
 import { Separator } from './ui/separator'
 import { Label } from './ui/label'
 import ProfileImage from './ProfileImage'
+import { ChangePasswordForm } from './ChangePasswordForm'
 
 export default function Profile() {
   const { data: user } = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
@@ -149,9 +150,7 @@ export default function Profile() {
                 </p>
               )}
             </div>
-
             <Separator />
-
             <div className='flex items-center justify-between gap-3'>
               <div className='flex flex-col'>
                 <span className='text-sm font-medium'>Password</span>
@@ -159,13 +158,9 @@ export default function Profile() {
                   Update your password using your account security flow.
                 </span>
               </div>
-              <Button type='button' variant='outline' size='sm' disabled>
-                Change password
-              </Button>
+              <ChangePasswordForm />
             </div>
-
             <Separator />
-
             <div className='flex items-center justify-between gap-3'>
               <div className='flex flex-col'>
                 <span className='text-sm font-medium'>Session</span>
