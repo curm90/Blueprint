@@ -21,8 +21,6 @@ export default function Profile() {
   const [saving, setSaving] = useState(false)
   const [name, setName] = useState(user?.name || '')
 
-  console.log({ user })
-
   const isVerified = user?.emailVerified
 
   async function handleSendVerification() {
@@ -63,33 +61,52 @@ export default function Profile() {
   }
 
   return (
-    <form onSubmit={handleSave} className='max-w-180 mx-auto w-full'>
+    <div className='max-w-180 mx-auto w-full flex flex-col gap-4'>
+      <form onSubmit={handleSave}>
+        <Card>
+          <CardHeader>
+            <div className='flex justify-between items-center gap-2'>
+              <h2 className='text-xl'>Profile</h2>
+              <Button type='submit' disabled={saving}>
+                {saving ? 'Saving…' : 'Save'}
+              </Button>
+            </div>
+            <p className='text-sm text-muted-foreground'>
+              Update your display name and profile image.
+            </p>
+          </CardHeader>
+          <Separator />
+          <CardContent>
+            <div className='flex flex-col gap-6'>
+              <ProfileImage
+                image={user?.image}
+                imagePreview={imagePreview}
+                imageRemoved={imageRemoved}
+                setImagePreview={setImagePreview}
+                setImageRemoved={setImageRemoved}
+              />
+              <Separator />
+
+              <Label className='text-muted-foreground flex flex-col gap-2 justify-start items-start'>
+                Name
+                <Input placeholder='' value={name} onChange={(e) => setName(e.target.value)} />
+              </Label>
+            </div>
+          </CardContent>
+        </Card>
+      </form>
+
       <Card>
         <CardHeader>
-          <div className='flex justify-between items-center gap-2'>
-            <h2 className='text-xl'>Profile</h2>
-            <Button type='submit' disabled={saving}>
-              {saving ? 'Saving…' : 'Save'}
-            </Button>
-          </div>
+          <h2 className='text-xl'>Account</h2>
+          <p className='text-sm text-muted-foreground'>
+            Manage your email, password, and active session.
+          </p>
         </CardHeader>
         <Separator />
         <CardContent>
-          <div className='flex flex-col gap-6'>
-            <ProfileImage
-              image={user?.image}
-              imagePreview={imagePreview}
-              imageRemoved={imageRemoved}
-              setImagePreview={setImagePreview}
-              setImageRemoved={setImageRemoved}
-            />
-            <Separator />
-
-            <Label className='text-muted-foreground flex flex-col gap-2 justify-start items-start'>
-              Name
-              <Input placeholder='' value={name} onChange={(e) => setName(e.target.value)} />
-            </Label>
-            <div className='flex flex-col gap-4'>
+          <div className='flex flex-col gap-5'>
+            <div className='flex flex-col gap-3'>
               <Label
                 htmlFor='email'
                 className='text-muted-foreground flex flex-col gap-2 justify-start items-start'
@@ -98,6 +115,18 @@ export default function Profile() {
                 <Input id='email' placeholder='' value={user?.email || ''} readOnly />
               </Label>
               <div className='flex items-center justify-between gap-3'>
+                {isVerified ? (
+                  <div className='flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400'>
+                    <CheckCircle className='size-4' />
+                    <span>Email verified</span>
+                  </div>
+                ) : (
+                  <div className='flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400'>
+                    <AlertCircle className='size-4' />
+                    <span>Email not verified</span>
+                  </div>
+                )}
+
                 {isVerified ? (
                   <Button type='button' variant='outline' size='sm' disabled>
                     Change email
@@ -118,29 +147,65 @@ export default function Profile() {
                         : 'Verify email'}
                   </Button>
                 )}
-
-                {isVerified ? (
-                  <div className='flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400'>
-                    <CheckCircle className='size-4' />
-                    <span>Email verified</span>
-                  </div>
-                ) : (
-                  <div className='flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400'>
-                    <AlertCircle className='size-4' />
-                    <span>Email not verified</span>
-                  </div>
-                )}
               </div>
+              {!isVerified && verificationSent && (
+                <p className='text-sm text-muted-foreground'>
+                  Verification email sent. Check your inbox and spam folder.
+                </p>
+              )}
             </div>
-          </div>
-          <div className='flex items-center gap-2 mt-8'>
-            <Button variant='destructive' onClick={handleSignOut}>
-              Sign out
-            </Button>
-            <Button variant='destructive'>Delete Account</Button>
+
+            <Separator />
+
+            <div className='flex items-center justify-between gap-3'>
+              <div className='flex flex-col'>
+                <span className='text-sm font-medium'>Password</span>
+                <span className='text-sm text-muted-foreground'>
+                  Update your password using your account security flow.
+                </span>
+              </div>
+              <Button type='button' variant='outline' size='sm' disabled>
+                Change password
+              </Button>
+            </div>
+
+            <Separator />
+
+            <div className='flex items-center justify-between gap-3'>
+              <div className='flex flex-col'>
+                <span className='text-sm font-medium'>Session</span>
+                <span className='text-sm text-muted-foreground'>Sign out on this device.</span>
+              </div>
+              <Button type='button' variant='outline' size='sm' onClick={handleSignOut}>
+                Sign out
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
-    </form>
+
+      <Card className='border border-destructive/20 bg-destructive/5'>
+        <CardHeader>
+          <h2 className='text-xl text-destructive'>Danger zone</h2>
+          <p className='text-sm text-destructive/80'>
+            Deleting your account is permanent and cannot be undone.
+          </p>
+        </CardHeader>
+        <Separator />
+        <CardContent>
+          <div className='flex flex-col gap-4'>
+            <p className='text-sm text-muted-foreground'>
+              This will remove your profile and account access. You will need to create a new account
+              to return.
+            </p>
+            <div className='flex justify-end'>
+              <Button type='button' variant='destructive' disabled>
+                Delete account
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
