@@ -5,7 +5,7 @@ import { convexQuery } from '@convex-dev/react-query'
 import { api } from 'convex/_generated/api'
 import ThemeToggle from '~/components/ThemeToggle'
 import { Separator } from '~/components/ui/separator'
-import { links, DEFAULT_AVATAR } from '~/lib/constants'
+import { LINKS, DEFAULT_AVATAR } from '~/lib/constants'
 
 export default function Header() {
   const { data: user } = useQuery(convexQuery(api.auth.getCurrentUser, {}))
@@ -18,19 +18,17 @@ export default function Header() {
           <h4 className='text-foreground'>Blueprint</h4>
         </Link>
         <div className='flex items-center gap-4'>
-          <ThemeToggle />
-          <Separator orientation='vertical' className='h-6 hidden sm:block sm:self-auto!' />
           <ul className='items-center gap-4 hidden sm:flex'>
-            {links
-              .filter((link) => link.to !== '/profile')
-              .map((link) => (
-                <li key={link.to}>
-                  <Link to={link.to} activeProps={{ className: 'text-sidebar-primary' }}>
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+            {LINKS.filter((link) => link.to !== '/profile').map((link) => (
+              <li key={link.to}>
+                <Link to={link.to} activeProps={{ className: 'text-sidebar-primary' }}>
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
+          <Separator orientation='vertical' className='h-6 hidden sm:block sm:self-auto!' />
+          <ThemeToggle />
           <Link
             to='/profile'
             title='Profile'

@@ -13,7 +13,7 @@ export const DAYS_OF_WEEK = [
   { value: 'sunday', shortLabel: 'Sun', label: 'Sunday' },
 ]
 
-export const links: Link[] = linkOptions([
+export const LINKS: Link[] = linkOptions([
   {
     to: '/',
     label: 'Today',
