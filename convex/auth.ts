@@ -33,6 +33,11 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
       sendOnSignUp: false,
       autoSignInAfterVerification: true,
     },
+    user: {
+      changeEmail: {
+        enabled: true,
+      },
+    },
     plugins: [
       // The Convex plugin is required for Convex compatibility
       convex({ authConfig }),
