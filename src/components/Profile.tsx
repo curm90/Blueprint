@@ -126,12 +126,7 @@ export default function Profile() {
                     <span>Email not verified</span>
                   </div>
                 )}
-
-                {isVerified ? (
-                  <Button type='button' variant='outline' size='sm' disabled>
-                    Change email
-                  </Button>
-                ) : (
+                {!isVerified && (
                   <Button
                     type='button'
                     variant='outline'
@@ -195,8 +190,8 @@ export default function Profile() {
         <CardContent>
           <div className='flex flex-col gap-4'>
             <p className='text-sm text-muted-foreground'>
-              This will remove your profile and account access. You will need to create a new account
-              to return.
+              This will remove your profile and account access. You will need to create a new
+              account to return.
             </p>
             <div className='flex justify-end'>
               <Button type='button' variant='destructive' disabled>

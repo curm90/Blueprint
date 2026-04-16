@@ -26,17 +26,8 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
       },
     },
     emailVerification: {
-      sendVerificationEmail: async ({ user, url }) => {
-        // TODO: replace with a real email sender (e.g. Resend, Postmark)
-        console.log('Verification URL for', user.email, url)
-      },
       sendOnSignUp: false,
       autoSignInAfterVerification: true,
-    },
-    user: {
-      changeEmail: {
-        enabled: true,
-      },
     },
     plugins: [
       // The Convex plugin is required for Convex compatibility
