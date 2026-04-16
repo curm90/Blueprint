@@ -27,7 +27,7 @@ async function changeUserPassword(values: ChangePasswordValues) {
   }
 }
 
-export function ChangePasswordForm() {
+export default function ChangePasswordForm() {
   const [open, setOpen] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 

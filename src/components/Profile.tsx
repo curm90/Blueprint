@@ -10,7 +10,8 @@ import { Input } from './ui/input'
 import { Separator } from './ui/separator'
 import { Label } from './ui/label'
 import ProfileImage from './ProfileImage'
-import { ChangePasswordForm } from './ChangePasswordForm'
+import ChangePasswordForm from './ChangePasswordForm'
+import SignOutDialog from './SignOutDialog'
 
 export default function Profile() {
   const { data: user } = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
@@ -49,16 +50,6 @@ export default function Profile() {
     } finally {
       setSaving(false)
     }
-  }
-
-  const handleSignOut = async () => {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          location.reload()
-        },
-      },
-    })
   }
 
   return (
@@ -166,9 +157,7 @@ export default function Profile() {
                 <span className='text-sm font-medium'>Session</span>
                 <span className='text-sm text-muted-foreground'>Sign out on this device.</span>
               </div>
-              <Button type='button' variant='outline' size='sm' onClick={handleSignOut}>
-                Sign out
-              </Button>
+              <SignOutDialog />
             </div>
           </div>
         </CardContent>
