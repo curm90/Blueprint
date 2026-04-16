@@ -129,7 +129,9 @@ function RootDocument({
       <body>
         <ThemeProvider>
           {showChrome && <Header />}
-          {children}
+          <main className='p-4 sm:p-8 pb-24 sm:pb-8 flex flex-col gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
+            {children}
+          </main>
           {showChrome && <FooterNav />}
         </ThemeProvider>
         <Scripts />

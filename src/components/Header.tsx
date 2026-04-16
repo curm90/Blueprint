@@ -1,22 +1,14 @@
 import { Link } from '@tanstack/react-router'
 import { Image } from '@unpic/react'
-import { LogOut } from 'lucide-react'
-import { authClient } from '~/lib/auth-client'
+import { useQuery } from '@tanstack/react-query'
+import { convexQuery } from '@convex-dev/react-query'
+import { api } from 'convex/_generated/api'
 import ThemeToggle from '~/components/ThemeToggle'
-import { Button } from '~/components/ui/button'
 import { Separator } from '~/components/ui/separator'
-import { links } from '~/lib/constants'
+import { LINKS, DEFAULT_AVATAR } from '~/lib/constants'
 
 export default function Header() {
-  const handleSignOut = async () => {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          location.reload()
-        },
-      },
-    })
-  }
+  const { data: user } = useQuery(convexQuery(api.auth.getCurrentUser, {}))
 
   return (
     <header>
@@ -26,10 +18,8 @@ export default function Header() {
           <h4 className='text-foreground'>Blueprint</h4>
         </Link>
         <div className='flex items-center gap-4'>
-          <ThemeToggle />
-          <Separator orientation='vertical' className='h-6 hidden sm:block sm:self-auto!' />
           <ul className='items-center gap-4 hidden sm:flex'>
-            {links.map((link) => (
+            {LINKS.filter((link) => link.to !== '/profile').map((link) => (
               <li key={link.to}>
                 <Link to={link.to} activeProps={{ className: 'text-sidebar-primary' }}>
                   {link.label}
@@ -37,9 +27,20 @@ export default function Header() {
               </li>
             ))}
           </ul>
-          <Button variant='ghost' size='icon' onClick={handleSignOut} title='Sign out'>
-            <LogOut className='size-4' />
-          </Button>
+          <Separator orientation='vertical' className='h-6 hidden sm:block sm:self-auto!' />
+          <ThemeToggle />
+          <Link
+            to='/profile'
+            title='Profile'
+            className='block size-7 rounded-full overflow-hidden ring-1 ring-border hover:ring-2 hover:ring-primary transition-all'
+          >
+            <Image
+              layout='fullWidth'
+              src={user?.image || DEFAULT_AVATAR}
+              alt='Profile'
+              className='size-full object-cover'
+            />
+          </Link>
         </div>
       </nav>
     </header>

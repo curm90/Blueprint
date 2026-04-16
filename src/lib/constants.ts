@@ -1,5 +1,7 @@
 import { linkOptions } from '@tanstack/react-router'
-import { Calendar, Dumbbell, TrendingUp } from 'lucide-react'
+import { Calendar, Dumbbell, TrendingUp, User } from 'lucide-react'
+
+export const DEFAULT_AVATAR = 'https://api.dicebear.com/9.x/glass/svg?radius=50'
 
 export const DAYS_OF_WEEK = [
   { value: 'monday', shortLabel: 'Mon', label: 'Monday' },
@@ -11,7 +13,7 @@ export const DAYS_OF_WEEK = [
   { value: 'sunday', shortLabel: 'Sun', label: 'Sunday' },
 ]
 
-export const links: Link[] = linkOptions([
+export const LINKS: Link[] = linkOptions([
   {
     to: '/',
     label: 'Today',
@@ -26,5 +28,10 @@ export const links: Link[] = linkOptions([
     to: '/progress',
     label: 'Progress',
     icon: TrendingUp,
+  },
+  {
+    to: '/profile',
+    label: 'Profile',
+    icon: User,
   },
 ])
