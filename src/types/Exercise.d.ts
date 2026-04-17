@@ -4,6 +4,7 @@ type Exercise = {
   weight: number
   minReps: number
   maxReps: number
+  sets: number
 }
 
 type WorkoutData = {
