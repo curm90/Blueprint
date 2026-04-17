@@ -22,6 +22,7 @@ export default defineSchema({
         weight: v.number(),
         minReps: v.number(),
         maxReps: v.number(),
+        sets: v.number(),
       }),
     ),
   }).index('by_userId', ['userId']),

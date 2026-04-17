@@ -8,6 +8,7 @@ export const exerciseSchema = z.object({
   weight: z.string().min(1, 'Weight is required'),
   minReps: z.string().min(1, 'Minimum reps is required'),
   maxReps: z.string().min(1, 'Maximum reps is required'),
+  sets: z.string().min(1, 'Sets is required'),
 })
 
 export const formSchema = z.object({

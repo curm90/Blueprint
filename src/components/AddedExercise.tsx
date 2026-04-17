@@ -12,7 +12,8 @@ export default function AddedExercise({
       <div className='flex-1'>
         <p className='font-medium text-sm'>{exercise.exerciseTitle}</p>
         <p className='text-xs text-muted-foreground'>
-          {exercise.weight} {weightUnit} • {exercise.minReps}-{exercise.maxReps} reps
+          {exercise.weight} {weightUnit} • {exercise.minReps}-{exercise.maxReps} reps •{' '}
+          {`${exercise.sets} sets`}
         </p>
       </div>
       <Button type='button' onClick={() => removeExercise(index)} variant='outline' size='sm'>
