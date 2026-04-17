@@ -36,6 +36,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
     weight?: string[]
     minReps?: string[]
     maxReps?: string[]
+    sets?: string[]
   }>({})
 
   const isEditMode = mode === 'edit'
@@ -55,6 +56,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
       weight: '',
       minReps: '',
       maxReps: '',
+      sets: '',
     },
     validators: {
       onSubmit: () => {
@@ -101,6 +103,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
       weight: form.getFieldValue('weight'),
       minReps: form.getFieldValue('minReps'),
       maxReps: form.getFieldValue('maxReps'),
+      sets: form.getFieldValue('sets'),
     }
 
     // Validate exercise data
@@ -114,6 +117,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
         weight: errorsByField.weight?._errors,
         minReps: errorsByField.minReps?._errors,
         maxReps: errorsByField.maxReps?._errors,
+        sets: errorsByField.sets?._errors,
       })
       return
     }
@@ -127,6 +131,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
       startingWeight: parseFloat(exerciseValues.weight),
       minReps: parseInt(exerciseValues.minReps),
       maxReps: parseInt(exerciseValues.maxReps),
+      sets: parseInt(exerciseValues.sets),
     }
 
     setExercises([...exercises, newExercise])
@@ -136,6 +141,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
     form.setFieldValue('weight', '')
     form.setFieldValue('minReps', '')
     form.setFieldValue('maxReps', '')
+    form.setFieldValue('sets', '')
   }
 
   function removeExercise(index: number) {
@@ -273,7 +279,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
             {/* Add Exercise Section */}
             <div className='border-t pt-6'>
               <h3 className='text-lg font-semibold mb-4'>Add Exercises</h3>
-              <div className='grid grid-cols-2 gap-4'>
+              <div className='grid grid-cols-2 gap-4 mb-4'>
                 <form.Field
                   name='exerciseTitle'
                   children={(field) => {
@@ -350,6 +356,8 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
                     )
                   }}
                 />
+              </div>
+              <div className='grid grid-cols-3 gap-4'>
                 <form.Field
                   name='minReps'
                   children={(field) => {
@@ -414,6 +422,40 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
                         {hasError && (
                           <FieldError
                             errors={exerciseFormErrors.maxReps?.map((err) => ({ message: err }))}
+                          />
+                        )}
+                      </Field>
+                    )
+                  }}
+                />
+                <form.Field
+                  name='sets'
+                  children={(field) => {
+                    const hasError = exerciseFormErrors.sets && exerciseFormErrors.sets.length > 0
+                    return (
+                      <Field data-invalid={hasError}>
+                        <FieldLabel htmlFor={field.name}>Sets</FieldLabel>
+                        <Input
+                          type='number'
+                          min='1'
+                          id={field.name}
+                          name={field.name}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value)
+                            // Clear error when user starts typing
+                            if (exerciseFormErrors.sets) {
+                              setExerciseFormErrors((prev) => ({ ...prev, sets: undefined }))
+                            }
+                          }}
+                          aria-invalid={hasError}
+                          placeholder='E.g. 8'
+                          autoComplete='off'
+                        />
+                        {hasError && (
+                          <FieldError
+                            errors={exerciseFormErrors.sets?.map((err) => ({ message: err }))}
                           />
                         )}
                       </Field>

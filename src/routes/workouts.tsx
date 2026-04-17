@@ -138,6 +138,9 @@ function RouteComponent() {
                                 {exercise.weight} {workout.weightUnit}
                               </span>
                               <span className='hidden sm:inline text-muted-foreground'>
+                                {exercise.sets} sets
+                              </span>
+                              <span className='hidden sm:inline text-muted-foreground'>
                                 {exercise.minReps}-{exercise.maxReps} reps
                               </span>
                             </div>
