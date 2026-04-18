@@ -41,6 +41,17 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    return await authComponent.getAuthUser(ctx)
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) return null
+
+    try {
+      return await authComponent.getAuthUser(ctx)
+    } catch (error) {
+      // Better Auth can briefly throw while sessions are rotating or expired.
+      if (error instanceof Error && error.message === 'Unauthenticated') {
+        return null
+      }
+      throw error
+    }
   },
 })

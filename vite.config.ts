@@ -9,6 +9,13 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  optimizeDeps: {
+    exclude: [
+      '@convex-dev/better-auth/react-start',
+      '@convex-dev/better-auth/react',
+      '@convex-dev/better-auth/client/plugins',
+    ],
+  },
   plugins: [
     tailwindcss(),
     tsConfigPaths({
