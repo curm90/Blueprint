@@ -75,8 +75,6 @@ export default function ChangePasswordForm() {
         </DialogHeader>
         <form
           onSubmit={(e) => {
-            console.log('Onsubmit called')
-
             e.preventDefault()
             form.handleSubmit()
           }}
