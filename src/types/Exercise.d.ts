@@ -1,5 +1,3 @@
-type workoutId = import('../../convex/_generated/dataModel').Id<'workouts'>
-
 type Exercise = {
   exerciseTitle: string
   startingWeight: number
@@ -32,7 +30,7 @@ type AddedExerciseListProps = {
 }
 
 type EditWorkoutFormProps = {
-  workoutId: workoutId
+  workoutId: WorkoutId
   initialData: WorkoutData
 }
 
@@ -45,7 +43,7 @@ type ExerciseResult = {
 
 type TrackWorkoutFormProps = {
   workout: {
-    _id: workoutId
+    _id: WorkoutId
     title: string
     weightUnit: string
     exercises: Exercise[]

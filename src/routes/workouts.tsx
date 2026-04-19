@@ -4,10 +4,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Calendar, ChevronDown, Dumbbell, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import { api } from 'convex/_generated/api'
-import type { Id } from 'convex/_generated/dataModel'
 import { CreateWorkoutForm, EditWorkoutForm } from '~/components/CreateWorkoutForm'
 import DeleteWorkoutDialog from '~/components/DeleteWorkoutDialog'
-import { EmptyUI } from '~/components/EmptyUI'
+import EmptyUI from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'
 import { Card, CardContent, CardFooter, CardHeader } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
@@ -28,7 +27,7 @@ function RouteComponent() {
   const { data: stats } = useSuspenseQuery(convexQuery(api.workoutCompletions.getWorkoutStats, {}))
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
-  function toggleExpand(id: Id<'workouts'>) {
+  function toggleExpand(id: WorkoutId) {
     setExpandedIds((prev) => {
       const next = new Set(prev)
       if (next.has(id)) {

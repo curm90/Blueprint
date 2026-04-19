@@ -15,7 +15,7 @@ type EmptyUIProps = {
   icon?: React.ReactNode
 }
 
-export function EmptyUI({ title, description, icon }: EmptyUIProps) {
+export default function EmptyUI({ title, description, icon }: EmptyUIProps) {
   return (
     <Empty>
       <EmptyHeader>

@@ -3,11 +3,10 @@ import { useState } from 'react'
 import { Trash } from 'lucide-react'
 import { useConvexMutation } from '@convex-dev/react-query'
 import { api } from 'convex/_generated/api'
-import type { Id } from 'convex/_generated/dataModel'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from './ui/dialog'
 import { Button } from './ui/button'
 
-export default function DeleteWorkoutDialog({ workoutId }: { workoutId: Id<'workouts'> }) {
+export default function DeleteWorkoutDialog({ workoutId }: { workoutId: WorkoutId }) {
   const [isOpen, setIsOpen] = useState(false)
 
   const { mutate, isPending } = useMutation({

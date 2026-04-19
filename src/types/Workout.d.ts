@@ -1,3 +1,5 @@
+type WorkoutId = import('../../convex/_generated/dataModel').Id<'workouts'>
+
 type WorkoutData = {
   title: string
   selectedDays: string[]
@@ -5,7 +7,7 @@ type WorkoutData = {
   exercises: Exercise[]
 }
 
-type WorkoutWithId = WorkoutData & { _id: workoutId }
+type WorkoutWithId = WorkoutData & { _id: WorkoutId }
 
 type WorkoutCardProps = {
   workout: WorkoutWithId
@@ -16,16 +18,16 @@ type WorkoutCardProps = {
 
 type WorkoutCardListProps = {
   todaysWorkouts: WorkoutWithId[]
-  completedWorkoutIds: Set<workoutId>
+  completedWorkoutIds: Set<WorkoutId>
   stats: {
-    completionsByWorkout: Record<string, number>
-    lastCompletedByWorkout: Record<string, number>
+    completionsByWorkout: Record<WorkoutId, number>
+    lastCompletedByWorkout: Record<WorkoutId, number>
   }
 }
 
 type WorkoutFormProps = {
   mode: 'create' | 'edit'
-  workoutId?: workoutId
+  workoutId?: WorkoutId
   initialData?: WorkoutData
   children: React.ReactNode
 }
