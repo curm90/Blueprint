@@ -1,3 +1,5 @@
+type workoutId = import('../../convex/_generated/dataModel').Id<'workouts'>
+
 type Exercise = {
   exerciseTitle: string
   startingWeight: number
@@ -7,18 +9,13 @@ type Exercise = {
   sets: number
 }
 
-type WorkoutData = {
+type ExerciseListItemProps = {
   title: string
-  selectedDays: string[]
+  weight: number
   weightUnit: string
-  exercises: Exercise[]
-}
-
-type WorkoutFormProps = {
-  mode: 'create' | 'edit'
-  workoutId?: import('../../convex/_generated/dataModel').Id<'workouts'>
-  initialData?: WorkoutData
-  children: React.ReactNode
+  sets: number
+  minReps: number
+  maxReps: number
 }
 
 type AddedExerciseProps = {
@@ -35,7 +32,7 @@ type AddedExerciseListProps = {
 }
 
 type EditWorkoutFormProps = {
-  workoutId: import('../../convex/_generated/dataModel').Id<'workouts'>
+  workoutId: workoutId
   initialData: WorkoutData
 }
 
@@ -48,9 +45,14 @@ type ExerciseResult = {
 
 type TrackWorkoutFormProps = {
   workout: {
-    _id: import('../../convex/_generated/dataModel').Id<'workouts'>
+    _id: workoutId
     title: string
     weightUnit: string
     exercises: Exercise[]
   }
+}
+
+type MiniMetricData = {
+  title: string
+  value: number
 }
