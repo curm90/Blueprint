@@ -12,7 +12,6 @@ import type * as auth from "../auth.js";
 import type * as exercises from "../exercises.js";
 import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
-import type * as myFunctions from "../myFunctions.js";
 import type * as workoutCompletions from "../workoutCompletions.js";
 import type * as workouts from "../workouts.js";
 
@@ -27,7 +26,6 @@ declare const fullApi: ApiFromModules<{
   exercises: typeof exercises;
   helpers: typeof helpers;
   http: typeof http;
-  myFunctions: typeof myFunctions;
   workoutCompletions: typeof workoutCompletions;
   workouts: typeof workouts;
 }>;
