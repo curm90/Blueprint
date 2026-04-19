@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui/table'
-import { Input } from './ui/input'
+import { Input } from '../components/ui/input'
 
 export default function ProgressTable<TData, TValue>({
   columns,

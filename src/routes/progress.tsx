@@ -5,7 +5,7 @@ import { createColumnHelper, type ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown, TrendingDown, TrendingUp } from 'lucide-react'
 import { api } from 'convex/_generated/api'
 import PageTitle from '~/components/PageTitle'
-import ProgressTable from '~/components/ProgressTable'
+import ProgressTable from '~/views/ProgressTable'
 import { Button } from '~/components/ui/button'
 
 export const Route = createFileRoute('/progress')({

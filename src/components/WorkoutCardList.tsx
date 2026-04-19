@@ -9,7 +9,7 @@ export default function WorkoutCardList({
     <div className='flex flex-col gap-4'>
       {todaysWorkouts.map((workout) => {
         const isCompleted = completedWorkoutIds.has(workout._id)
-        const lastCompleted = stats?.lastCompletedByWorkout[workout._id as string]
+        const lastCompleted = stats?.lastCompletedByWorkout[workout._id]
 
         const miniMetricData = [
           {
@@ -18,7 +18,7 @@ export default function WorkoutCardList({
           },
           {
             title: 'Times Done',
-            value: stats?.completionsByWorkout[workout._id as string] ?? 0,
+            value: stats?.completionsByWorkout[workout._id] ?? 0,
           },
           {
             title: 'Progress',
