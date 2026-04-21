@@ -1,4 +1,5 @@
 type Exercise = {
+  id: string
   exerciseTitle: string
   startingWeight: number
   weight: number
@@ -18,14 +19,13 @@ type ExerciseListItemProps = {
 
 type AddedExerciseProps = {
   exercise: Exercise
-  index: number
-  removeExercise: (index: number) => void
+  removeExercise: (id: string) => void
   weightUnit: string
 }
 
 type AddedExerciseListProps = {
   exercises: Exercise[]
-  removeExercise: (index: number) => void
+  removeExercise: (id: string) => void
   weightUnit: string
 }
 
@@ -37,6 +37,7 @@ type EditWorkoutFormProps = {
 type FeedbackOption = 'too-easy' | 'just-right' | 'too-hard' | null
 
 type ExerciseResult = {
+  id: string
   exerciseTitle: string
   feedback: FeedbackOption
 }
