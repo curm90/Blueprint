@@ -1,13 +1,14 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { convexQuery } from '@convex-dev/react-query'
+import { Calendar, ChevronDown, Dumbbell, TrendingUp } from 'lucide-react'
 import { api } from 'convex/_generated/api'
 import { CreateWorkoutForm, EditWorkoutForm } from './CreateWorkoutForm'
 import EmptyUI from './EmptyUI'
 import PageTitle from './PageTitle'
-import { Card, CardContent, CardFooter, CardHeader } from './ui/card'
-import { Calendar, ChevronDown, Dumbbell, TrendingUp } from 'lucide-react'
 import DeleteWorkoutDialog from './DeleteWorkoutDialog'
+import ExerciseListItem from './ExerciseListItem'
+import { Card, CardContent, CardFooter, CardHeader } from './ui/card'
 import { Separator } from './ui/separator'
 import { DAYS_OF_WEEK } from '~/lib/constants'
 
@@ -113,25 +114,15 @@ export default function Workouts() {
                       {/* Exercise list */}
                       <ul className='flex flex-col gap-2'>
                         {workout.exercises.map((exercise) => (
-                          <li
-                            key={exercise.exerciseTitle}
-                            className='flex items-center justify-between rounded-lg border border-border/50 px-2.5 py-2 sm:px-3 sm:py-2.5'
-                          >
-                            <h4 className='text-sm font-medium truncate min-w-0'>
-                              {exercise.exerciseTitle}
-                            </h4>
-                            <div className='flex items-center gap-2 text-sm shrink-0'>
-                              <span className='rounded-md bg-primary/10 px-2 py-0.5 font-semibold text-primary'>
-                                {exercise.weight} {workout.weightUnit}
-                              </span>
-                              <span className='hidden sm:inline text-muted-foreground'>
-                                {exercise.sets} sets
-                              </span>
-                              <span className='hidden sm:inline text-muted-foreground'>
-                                {exercise.minReps}-{exercise.maxReps} reps
-                              </span>
-                            </div>
-                          </li>
+                          <ExerciseListItem
+                            key={exercise.id}
+                            title={exercise.exerciseTitle}
+                            weight={exercise.weight}
+                            weightUnit={workout.weightUnit}
+                            sets={exercise.sets}
+                            minReps={exercise.minReps}
+                            maxReps={exercise.maxReps}
+                          />
                         ))}
                       </ul>
                     </CardContent>

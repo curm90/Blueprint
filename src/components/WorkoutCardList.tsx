@@ -28,6 +28,7 @@ export default function WorkoutCardList({
 
         return (
           <WorkoutCard
+            key={workout._id}
             workout={workout}
             isCompleted={isCompleted}
             lastCompleted={lastCompleted}

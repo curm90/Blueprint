@@ -126,6 +126,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
     setExerciseFormErrors({})
 
     const newExercise: Exercise = {
+      id: crypto.randomUUID(),
       exerciseTitle: exerciseValues.exerciseTitle,
       weight: parseFloat(exerciseValues.weight),
       startingWeight: parseFloat(exerciseValues.weight),
@@ -144,8 +145,8 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
     form.setFieldValue('sets', '')
   }
 
-  function removeExercise(index: number) {
-    setExercises(exercises.filter((_, i) => i !== index))
+  function removeExercise(exerciseId: string) {
+    setExercises(exercises.filter((exercise) => exercise.id !== exerciseId))
   }
 
   function handleDialogClose() {

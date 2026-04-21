@@ -7,10 +7,7 @@ export default function ExerciseListItem({
   maxReps,
 }: ExerciseListItemProps) {
   return (
-    <li
-      key={title}
-      className='flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5'
-    >
+    <li className='flex items-center justify-between rounded-lg border border-border/50 px-3 py-2.5'>
       <h4 className='text-sm font-medium'>{title}</h4>
       <div className='flex items-center gap-2 text-sm'>
         <span className='rounded-md bg-primary/10 px-2 py-0.5 font-semibold text-primary'>

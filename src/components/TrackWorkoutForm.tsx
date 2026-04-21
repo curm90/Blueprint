@@ -32,6 +32,7 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
     if (!selectedOption || !currentExercise) return
 
     const result: ExerciseResult = {
+      id: currentExercise.id,
       exerciseTitle: currentExercise.exerciseTitle,
       feedback: selectedOption,
     }
