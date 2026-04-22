@@ -40,3 +40,23 @@ type WorkoutFormProps = {
   initialData?: WorkoutData
   children: React.ReactNode
 }
+
+type TrackWorkoutOptionBtnProps = {
+  id: Exclude<FeedbackOption, null>
+  title: string
+  onSelect: (option: Exclude<FeedbackOption, null>) => void
+  isSelected: boolean
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
+  buttonClassName: string
+  iconColor: string
+  description: string
+}
+
+type TrackWorkoutOption = {
+  id: Exclude<FeedbackOption, null>
+  title: string
+  description: string
+  buttonClassName: string
+  iconColor: string
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
+}

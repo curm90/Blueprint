@@ -1,9 +1,8 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Check, ChevronRight, TrendingDown, TrendingUp } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { useConvexMutation } from '@convex-dev/react-query'
 import { api } from 'convex/_generated/api'
-import { cn } from '~/lib/utils'
 import options from './TrackWorkoutOptionData'
 import { Button } from './ui/button'
 import {
@@ -113,74 +112,13 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
                   id={option.id}
                   title={option.title}
                   description={option.description}
-                  setSelectedOption={setSelectedOption}
-                  selectedOption={selectedOption}
+                  onSelect={setSelectedOption}
+                  isSelected={selectedOption === option.id}
                   icon={option.icon}
                   buttonClassName={option.buttonClassName}
                   iconColor={option.iconColor}
                 />
               ))}
-              {/* <button
-                type='button'
-                onClick={() => setSelectedOption('too-easy')}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg border p-3 text-left text-sm transition-colors',
-                  selectedOption === 'too-easy'
-                    ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-400'
-                    : 'hover:bg-muted',
-                )}
-              >
-                <TrendingUp className='size-4 shrink-0 text-green-500' />
-                <div>
-                  <span className='font-medium'>Too Easy</span>
-                  <p className='text-xs text-muted-foreground'>
-                    Add 2.5{workout.weightUnit} next workout
-                  </p>
-                </div>
-                {selectedOption === 'too-easy' && (
-                  <Check className='ml-auto size-4 text-green-500' />
-                )}
-              </button>
-
-              <button
-                type='button'
-                onClick={() => setSelectedOption('just-right')}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg border p-3 text-left text-sm transition-colors',
-                  selectedOption === 'just-right'
-                    ? 'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400'
-                    : 'hover:bg-muted',
-                )}
-              >
-                <Check className='size-4 shrink-0 text-orange-500' />
-                <div>
-                  <span className='font-medium'>Just Right</span>
-                  <p className='text-xs text-muted-foreground'>3× in a row → increase weight</p>
-                </div>
-                {selectedOption === 'just-right' && (
-                  <Check className='ml-auto size-4 text-orange-500' />
-                )}
-              </button>
-
-              <button
-                type='button'
-                onClick={() => setSelectedOption('too-hard')}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg border p-3 text-left text-sm transition-colors',
-                  selectedOption === 'too-hard'
-                    ? 'border-red-500 bg-red-500/10 text-red-700 dark:text-red-400'
-                    : 'hover:bg-muted',
-                )}
-              >
-                <TrendingDown className='size-4 shrink-0 text-red-500' />
-                <div>
-                  <span className='font-medium'>Too Hard</span>
-                  <p className='text-xs text-muted-foreground'>
-                    Decrease by 2.5{workout.weightUnit} next workout
-                  </p>
-                </div>
-                {selectedOption === 'too-hard' && <Check className='ml-auto size-4 text-red-500' />}
-              </button> */}
             </div>
           </div>
         )}
