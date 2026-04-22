@@ -1,16 +1,16 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { convexQuery } from '@convex-dev/react-query'
-import { Calendar, ChevronDown, Dumbbell, TrendingUp } from 'lucide-react'
+import { Calendar, TrendingUp } from 'lucide-react'
 import { api } from 'convex/_generated/api'
-import { CreateWorkoutForm, EditWorkoutForm } from './CreateWorkoutForm'
+import { CreateWorkoutForm } from './CreateWorkoutForm'
 import EmptyUI from './EmptyUI'
 import PageTitle from './PageTitle'
-import DeleteWorkoutDialog from './DeleteWorkoutDialog'
 import ExerciseListItem from './ExerciseListItem'
-import { Card, CardContent, CardFooter, CardHeader } from './ui/card'
+import { Card, CardContent, CardFooter } from './ui/card'
 import { Separator } from './ui/separator'
 import { DAYS_OF_WEEK } from '~/lib/constants'
+import WorkoutCardHeader from './WorkoutCard/WorkoutCardHeader'
 
 export default function Workouts() {
   const { data: workouts } = useSuspenseQuery(convexQuery(api.workouts.listWorkouts, {}))
@@ -53,42 +53,17 @@ export default function Workouts() {
 
             return (
               <Card key={workout._id}>
-                <CardHeader className='cursor-pointer' onClick={() => toggleExpand(workout._id)}>
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-3'>
-                      <div className='rounded-lg bg-primary/10 p-2 hidden sm:flex'>
-                        <Dumbbell className='size-5 text-primary' />
-                      </div>
-                      <div>
-                        <h3 className='text-lg font-semibold'>{workout.title}</h3>
-                        <p className='text-xs text-muted-foreground'>
-                          {workout.exercises.length} exercises &middot; {workout.weightUnit}
-                        </p>
-                      </div>
-                    </div>
-                    <div className='flex items-center gap-2'>
-                      <div
-                        className='flex items-center gap-1 sm:gap-2'
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <EditWorkoutForm
-                          workoutId={workout._id}
-                          initialData={{
-                            title: workout.title,
-                            selectedDays: workout.selectedDays,
-                            weightUnit: workout.weightUnit,
-                            exercises: workout.exercises,
-                          }}
-                        />
-                        <DeleteWorkoutDialog workoutId={workout._id} />
-                      </div>
-                      <ChevronDown
-                        className={`size-4 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                      />
-                    </div>
-                  </div>
-                </CardHeader>
-
+                <WorkoutCardHeader
+                  variant='manage'
+                  workoutId={workout._id}
+                  isExpanded={isExpanded}
+                  onToggleExpand={() => toggleExpand(workout._id)}
+                  title={workout.title}
+                  exerciseCount={workout.exercises.length}
+                  weightUnit={workout.weightUnit}
+                  selectedDays={workout.selectedDays}
+                  exercises={workout.exercises}
+                />
                 {isExpanded && (
                   <>
                     <Separator />

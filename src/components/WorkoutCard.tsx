@@ -1,9 +1,9 @@
-import { CheckCircle, Dumbbell } from 'lucide-react'
-import { Card, CardContent, CardFooter, CardHeader } from './ui/card'
+import { Card, CardContent, CardFooter } from './ui/card'
 import { Separator } from './ui/separator'
 import MiniMetricsCardList from './MiniMetricsCardList'
 import ExerciseListItem from './ExerciseListItem'
 import TrackWorkoutForm from './TrackWorkoutForm'
+import WorkoutCardHeader from './WorkoutCard/WorkoutCardHeader'
 
 export default function WorkoutCard({
   workout,
@@ -13,29 +13,13 @@ export default function WorkoutCard({
 }: WorkoutCardProps) {
   return (
     <Card className={`transition-all ${isCompleted ? 'opacity-60 ring-emerald-500/30' : ''}`}>
-      <CardHeader>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-3'>
-            <div
-              className={`rounded-lg p-2 ${isCompleted ? 'bg-emerald-500/10' : 'bg-primary/10'}`}
-            >
-              <Dumbbell className={`size-5 ${isCompleted ? 'text-emerald-500' : 'text-primary'}`} />
-            </div>
-            <div>
-              <h3 className='text-lg font-semibold'>{workout.title}</h3>
-              <p className='text-xs text-muted-foreground'>
-                {workout.exercises.length} exercises &middot; {workout.weightUnit}
-              </p>
-            </div>
-          </div>
-          {isCompleted && (
-            <div className='flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1'>
-              <CheckCircle className='size-3.5 text-emerald-500' />
-              <span className='text-xs font-medium text-emerald-500'>Done</span>
-            </div>
-          )}
-        </div>
-      </CardHeader>
+      <WorkoutCardHeader
+        variant='track'
+        isCompleted={isCompleted}
+        title={workout.title}
+        exerciseCount={workout.exercises.length}
+        weightUnit={workout.weightUnit}
+      />
 
       <Separator />
 
