@@ -4,6 +4,7 @@ import { Check, ChevronRight, TrendingDown, TrendingUp } from 'lucide-react'
 import { useConvexMutation } from '@convex-dev/react-query'
 import { api } from 'convex/_generated/api'
 import { cn } from '~/lib/utils'
+import options from './TrackWorkoutOptionData'
 import { Button } from './ui/button'
 import {
   Dialog,
@@ -13,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog'
+import TrackWorkoutOptionBtn from './TrackWorkoutOptionBtn'
 
 export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
   const [open, setOpen] = useState(false)
@@ -20,7 +22,7 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
   const [selectedOption, setSelectedOption] = useState<FeedbackOption>(null)
   const [results, setResults] = useState<ExerciseResult[]>([])
 
-  const { mutate: trackWorkout } = useMutation({
+  const trackWorkout = useMutation({
     mutationFn: useConvexMutation(api.workoutCompletions.trackWorkout),
   })
 
@@ -28,7 +30,7 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
   const currentExercise = workout.exercises[currentStep]
   const isLastExercise = currentStep === totalExercises - 1
 
-  function handleNext() {
+  async function handleNext() {
     if (!selectedOption || !currentExercise) return
 
     const result: ExerciseResult = {
@@ -44,8 +46,10 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
       setCurrentStep((prev) => prev + 1)
       setSelectedOption(null)
     } else {
-      trackWorkout({ workoutId: workout._id, results: updatedResults })
-      handleReset()
+      try {
+        await trackWorkout.mutateAsync({ workoutId: workout._id, results: updatedResults })
+        handleReset()
+      } catch (error) {}
     }
   }
 
@@ -103,7 +107,20 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
 
             {/* Feedback options */}
             <div className='flex flex-col gap-2'>
-              <button
+              {options.map((option) => (
+                <TrackWorkoutOptionBtn
+                  key={option.id}
+                  id={option.id}
+                  title={option.title}
+                  description={option.description}
+                  setSelectedOption={setSelectedOption}
+                  selectedOption={selectedOption}
+                  icon={option.icon}
+                  buttonClassName={option.buttonClassName}
+                  iconColor={option.iconColor}
+                />
+              ))}
+              {/* <button
                 type='button'
                 onClick={() => setSelectedOption('too-easy')}
                 className={cn(
@@ -163,7 +180,7 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
                   </p>
                 </div>
                 {selectedOption === 'too-hard' && <Check className='ml-auto size-4 text-red-500' />}
-              </button>
+              </button> */}
             </div>
           </div>
         )}
