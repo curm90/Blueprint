@@ -1,7 +1,8 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, LoaderCircle } from 'lucide-react'
 import { useConvexMutation } from '@convex-dev/react-query'
+import { toast } from 'sonner'
 import { api } from 'convex/_generated/api'
 import options from './TrackWorkoutOptionData'
 import { Button } from './ui/button'
@@ -47,8 +48,11 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
     } else {
       try {
         await trackWorkout.mutateAsync({ workoutId: workout._id, results: updatedResults })
+        toast.success('Workout tracked successfully!')
         handleReset()
-      } catch (error) {}
+      } catch (error) {
+        toast.error('Failed to track workout. Please try again.')
+      }
     }
   }
 
@@ -124,7 +128,12 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
         )}
 
         <DialogFooter>
-          <Button onClick={handleNext} disabled={!selectedOption} className='w-full sm:w-auto'>
+          <Button
+            onClick={handleNext}
+            disabled={!selectedOption || trackWorkout.isPending}
+            className='w-full sm:w-auto'
+          >
+            {trackWorkout.isPending && <LoaderCircle className='h-4 w-4 animate-spin' />}
             {isLastExercise ? 'Finish Workout' : 'Next Exercise'}
             <ChevronRight className='size-4' />
           </Button>
