@@ -7,6 +7,15 @@ type WorkoutData = {
   exercises: Exercise[]
 }
 
+type TrackedWorkout = {
+  workout: {
+    _id: WorkoutId
+    title: string
+    weightUnit: string
+    exercises: Exercise[]
+  }
+}
+
 type WorkoutWithId = WorkoutData & { _id: WorkoutId }
 
 type WorkoutCardProps = {
