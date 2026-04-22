@@ -7,13 +7,10 @@ type WorkoutData = {
   exercises: Exercise[]
 }
 
+type WorkoutWithId = WorkoutData & { _id: WorkoutId }
+
 type TrackedWorkout = {
-  workout: {
-    _id: WorkoutId
-    title: string
-    weightUnit: string
-    exercises: Exercise[]
-  }
+  workout: WorkoutWithId
 }
 
 type WorkoutWithId = WorkoutData & { _id: WorkoutId }
