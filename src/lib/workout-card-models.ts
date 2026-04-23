@@ -1,3 +1,5 @@
+import { getWorkoutCompletionCount, getWorkoutLastCompleted } from './workout-stats'
+
 function getWorkoutMetricData(workout: WorkoutWithId, completionCount: number): WorkoutMetrics[] {
   return [
     {
@@ -23,9 +25,8 @@ export function buildWorkoutCardModel(
   stats?: StatsData,
   completedWorkoutIds: Set<WorkoutId> = new Set(),
 ): WorkoutCardModel {
-  const workoutId = workout._id as string
-  const completionCount = stats?.completionsByWorkout[workoutId] ?? 0
-  const lastCompleted = stats?.lastCompletedByWorkout[workoutId] ?? null
+  const completionCount = getWorkoutCompletionCount(stats, workout._id)
+  const lastCompleted = getWorkoutLastCompleted(stats, workout._id)
   const totalWeightProgress = workout.exercises.reduce(
     (sum, exercise) => sum + (exercise.weight - exercise.startingWeight),
     0,
