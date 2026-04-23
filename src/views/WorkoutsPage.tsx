@@ -26,6 +26,7 @@ export default function WorkoutsPage() {
       return next
     })
   }
+
   return (
     <>
       <div className='flex items-center justify-between'>
