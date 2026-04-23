@@ -15,20 +15,35 @@ type TrackedWorkout = {
 
 type WorkoutCardVariant = 'track' | 'manage'
 
-type WorkoutCardProps = {
+type WorkoutCardModel = {
   workout: WorkoutWithId
   isCompleted: boolean
   lastCompleted: number | null
+  completionCount: number
+  totalWeightProgress: number
   workoutMetricData: WorkoutMetrics[]
 }
 
 type WorkoutCardListProps = {
-  todaysWorkouts: WorkoutWithId[]
-  completedWorkoutIds: Set<WorkoutId>
-  stats: {
-    completionsByWorkout: Record<WorkoutId, number>
-    lastCompletedByWorkout: Record<WorkoutId, number>
-  }
+  workoutCards: WorkoutCardModel[]
+}
+
+type TrackWorkoutCardProps = {
+  variant: 'track'
+  model: WorkoutCardModel
+}
+
+type ManageWorkoutCardProps = {
+  variant: 'manage'
+  model: WorkoutCardModel
+  isExpanded: boolean
+  onToggleExpand: () => void
+}
+
+type WorkoutCardProps = TrackWorkoutCardProps | ManageWorkoutCardProps
+
+type ManageWorkoutCardListProps = {
+  workoutCards: WorkoutCardModel[]
 }
 
 type WorkoutFormProps = {

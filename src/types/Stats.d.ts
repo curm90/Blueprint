@@ -17,6 +17,6 @@ type StatsData = {
 
 type StatsCardsListProps = {
   stats: StatsData
-  todaysWorkouts?: Workout[]
-  completedWorkoutIds: Set<string>
+  todaysWorkouts?: WorkoutWithId[]
+  completedWorkoutIds: Set<WorkoutId>
 }
