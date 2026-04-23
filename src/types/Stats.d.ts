@@ -7,10 +7,13 @@ type StatsCardProps = {
   bg: string
 }
 
+type WorkoutCountById = Record<string, number>
+type WorkoutLastCompletedById = Record<string, number>
+
 type StatsData = {
   totalCompletions: number
-  completionsByWorkout: Record<string, number>
-  lastCompletedByWorkout: Record<string, number>
+  completionsByWorkout: WorkoutCountById
+  lastCompletedByWorkout: WorkoutLastCompletedById
   streak: number
   thisWeekCompletions: number
 }

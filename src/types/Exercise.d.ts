@@ -43,12 +43,7 @@ type ExerciseResult = {
 }
 
 type TrackWorkoutFormProps = {
-  workout: {
-    _id: WorkoutId
-    title: string
-    weightUnit: string
-    exercises: Exercise[]
-  }
+  workout: WorkoutWithId
 }
 
 type WorkoutMetrics = {

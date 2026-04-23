@@ -9,12 +9,6 @@ type WorkoutData = {
 
 type WorkoutWithId = WorkoutData & { _id: WorkoutId }
 
-type TrackedWorkout = {
-  workout: WorkoutWithId
-}
-
-type WorkoutCardVariant = 'track' | 'manage'
-
 type WorkoutCardModel = {
   workout: WorkoutWithId
   isCompleted: boolean
@@ -41,10 +35,6 @@ type ManageWorkoutCardProps = {
 }
 
 type WorkoutCardProps = TrackWorkoutCardProps | ManageWorkoutCardProps
-
-type ManageWorkoutCardListProps = {
-  workoutCards: WorkoutCardModel[]
-}
 
 type WorkoutFormProps = {
   mode: 'create' | 'edit'
