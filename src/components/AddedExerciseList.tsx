@@ -7,11 +7,10 @@ export default function AddedExerciseList({
 }: AddedExerciseListProps) {
   return (
     <div className='space-y-2 max-h-48 overflow-y-auto'>
-      {exercises.map((exercise, index) => (
+      {exercises.map((exercise) => (
         <AddedExercise
-          key={index}
+          key={exercise.id}
           exercise={exercise}
-          index={index}
           removeExercise={removeExercise}
           weightUnit={weightUnit}
         />

@@ -8,10 +8,11 @@ import {
   useRouterState,
 } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
-import { ConvexQueryClient } from '@convex-dev/react-query'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import type { QueryClient } from '@tanstack/react-query'
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
+import type { ConvexQueryClient } from '@convex-dev/react-query'
+import { Toaster } from 'sonner'
 import appCss from '~/styles/app.css?url'
 import Header from '~/components/Header'
 import FooterNav from '~/components/FooterNav'
@@ -132,6 +133,7 @@ function RootDocument({
           <main className='p-4 sm:p-8 pb-24 sm:pb-8 flex flex-col gap-10 min-h-[calc(100vh-66px)] max-w-250 mx-auto'>
             {children}
           </main>
+          <Toaster />
           {showChrome && <FooterNav />}
         </ThemeProvider>
         <Scripts />

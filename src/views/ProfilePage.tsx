@@ -1,19 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { CheckCircle, AlertCircle, Send } from 'lucide-react'
 import { convexQuery } from '@convex-dev/react-query'
 import { api } from 'convex/_generated/api'
 import { authClient } from '~/lib/auth-client'
-import { Button } from './ui/button'
-import { Card, CardContent, CardHeader } from './ui/card'
-import { Input } from './ui/input'
-import { Separator } from './ui/separator'
-import { Label } from './ui/label'
-import ProfileImage from './ProfileImage'
-import ChangePasswordForm from './ChangePasswordForm'
-import SignOutDialog from './SignOutDialog'
+import { Button } from '~/components/ui/button'
+import { Card, CardContent, CardHeader } from '~/components/ui/card'
+import { Input } from '~/components/ui/input'
+import { Separator } from '~/components/ui/separator'
+import { Label } from '~/components/ui/label'
+import ProfileImage from '~/components/ProfileImage'
+import ChangePasswordForm from '~/components/ChangePasswordForm'
+import SignOutDialog from '~/components/SignOutDialog'
 
-export default function Profile() {
+export default function ProfilePage() {
   const { data: user } = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
 
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -21,7 +21,14 @@ export default function Profile() {
   const [verificationSent, setVerificationSent] = useState(false)
   const [sending, setSending] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [name, setName] = useState(user?.name || '')
+  const [name, setName] = useState('')
+  const [isNameDirty, setIsNameDirty] = useState(false)
+
+  useEffect(() => {
+    if (!isNameDirty) {
+      setName(user?.name ?? '')
+    }
+  }, [user?.name, isNameDirty])
 
   const isVerified = user?.emailVerified
 
@@ -47,6 +54,7 @@ export default function Profile() {
         updates.image = null
       }
       await authClient.updateUser(updates)
+      setIsNameDirty(false)
     } finally {
       setSaving(false)
     }
@@ -81,7 +89,14 @@ export default function Profile() {
 
               <Label className='text-muted-foreground flex flex-col gap-2 justify-start items-start'>
                 Name
-                <Input placeholder='' value={name} onChange={(e) => setName(e.target.value)} />
+                <Input
+                  placeholder=''
+                  value={name}
+                  onChange={(e) => {
+                    setIsNameDirty(true)
+                    setName(e.target.value)
+                  }}
+                />
               </Label>
             </div>
           </CardContent>

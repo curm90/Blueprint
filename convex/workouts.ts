@@ -9,6 +9,7 @@ export const addWorkout = mutation({
     weightUnit: v.string(),
     exercises: v.array(
       v.object({
+        id: v.string(),
         exerciseTitle: v.string(),
         startingWeight: v.number(),
         weight: v.number(),
@@ -84,6 +85,7 @@ export const editWorkoutById = mutation({
       weightUnit: v.string(),
       exercises: v.array(
         v.object({
+          id: v.string(),
           exerciseTitle: v.string(),
           startingWeight: v.number(),
           weight: v.number(),

@@ -1,9 +1,10 @@
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Check, ChevronRight, TrendingDown, TrendingUp } from 'lucide-react'
+import { ChevronRight, LoaderCircle } from 'lucide-react'
 import { useConvexMutation } from '@convex-dev/react-query'
+import { toast } from 'sonner'
 import { api } from 'convex/_generated/api'
-import { cn } from '~/lib/utils'
+import options from './TrackWorkoutOptionData'
 import { Button } from './ui/button'
 import {
   Dialog,
@@ -13,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog'
+import TrackWorkoutOptionBtn from './TrackWorkoutOptionBtn'
 
 export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
   const [open, setOpen] = useState(false)
@@ -20,7 +22,7 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
   const [selectedOption, setSelectedOption] = useState<FeedbackOption>(null)
   const [results, setResults] = useState<ExerciseResult[]>([])
 
-  const { mutate: trackWorkout } = useMutation({
+  const trackWorkout = useMutation({
     mutationFn: useConvexMutation(api.workoutCompletions.trackWorkout),
   })
 
@@ -28,10 +30,11 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
   const currentExercise = workout.exercises[currentStep]
   const isLastExercise = currentStep === totalExercises - 1
 
-  function handleNext() {
+  async function handleNext() {
     if (!selectedOption || !currentExercise) return
 
     const result: ExerciseResult = {
+      id: currentExercise.id,
       exerciseTitle: currentExercise.exerciseTitle,
       feedback: selectedOption,
     }
@@ -43,8 +46,13 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
       setCurrentStep((prev) => prev + 1)
       setSelectedOption(null)
     } else {
-      trackWorkout({ workoutId: workout._id, results: updatedResults })
-      handleReset()
+      try {
+        await trackWorkout.mutateAsync({ workoutId: workout._id, results: updatedResults })
+        toast.success('Workout tracked successfully!')
+        handleReset()
+      } catch (error) {
+        toast.error('Failed to track workout. Please try again.')
+      }
     }
   }
 
@@ -102,73 +110,30 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
 
             {/* Feedback options */}
             <div className='flex flex-col gap-2'>
-              <button
-                type='button'
-                onClick={() => setSelectedOption('too-easy')}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg border p-3 text-left text-sm transition-colors',
-                  selectedOption === 'too-easy'
-                    ? 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-400'
-                    : 'hover:bg-muted',
-                )}
-              >
-                <TrendingUp className='size-4 shrink-0 text-green-500' />
-                <div>
-                  <span className='font-medium'>Too Easy</span>
-                  <p className='text-xs text-muted-foreground'>
-                    Add 2.5{workout.weightUnit} next workout
-                  </p>
-                </div>
-                {selectedOption === 'too-easy' && (
-                  <Check className='ml-auto size-4 text-green-500' />
-                )}
-              </button>
-
-              <button
-                type='button'
-                onClick={() => setSelectedOption('just-right')}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg border p-3 text-left text-sm transition-colors',
-                  selectedOption === 'just-right'
-                    ? 'border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400'
-                    : 'hover:bg-muted',
-                )}
-              >
-                <Check className='size-4 shrink-0 text-orange-500' />
-                <div>
-                  <span className='font-medium'>Just Right</span>
-                  <p className='text-xs text-muted-foreground'>3× in a row → increase weight</p>
-                </div>
-                {selectedOption === 'just-right' && (
-                  <Check className='ml-auto size-4 text-orange-500' />
-                )}
-              </button>
-
-              <button
-                type='button'
-                onClick={() => setSelectedOption('too-hard')}
-                className={cn(
-                  'flex items-center gap-3 rounded-lg border p-3 text-left text-sm transition-colors',
-                  selectedOption === 'too-hard'
-                    ? 'border-red-500 bg-red-500/10 text-red-700 dark:text-red-400'
-                    : 'hover:bg-muted',
-                )}
-              >
-                <TrendingDown className='size-4 shrink-0 text-red-500' />
-                <div>
-                  <span className='font-medium'>Too Hard</span>
-                  <p className='text-xs text-muted-foreground'>
-                    Decrease by 2.5{workout.weightUnit} next workout
-                  </p>
-                </div>
-                {selectedOption === 'too-hard' && <Check className='ml-auto size-4 text-red-500' />}
-              </button>
+              {options.map((option) => (
+                <TrackWorkoutOptionBtn
+                  key={option.id}
+                  id={option.id}
+                  title={option.title}
+                  description={option.description}
+                  onSelect={setSelectedOption}
+                  isSelected={selectedOption === option.id}
+                  icon={option.icon}
+                  buttonClassName={option.buttonClassName}
+                  iconColor={option.iconColor}
+                />
+              ))}
             </div>
           </div>
         )}
 
         <DialogFooter>
-          <Button onClick={handleNext} disabled={!selectedOption} className='w-full sm:w-auto'>
+          <Button
+            onClick={handleNext}
+            disabled={!selectedOption || trackWorkout.isPending}
+            className='w-full sm:w-auto'
+          >
+            {trackWorkout.isPending && <LoaderCircle className='h-4 w-4 animate-spin' />}
             {isLastExercise ? 'Finish Workout' : 'Next Exercise'}
             <ChevronRight className='size-4' />
           </Button>

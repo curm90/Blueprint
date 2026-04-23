@@ -3,7 +3,6 @@ import { Button } from './ui/button'
 
 export default function AddedExercise({
   exercise,
-  index,
   removeExercise,
   weightUnit,
 }: AddedExerciseProps) {
@@ -16,7 +15,7 @@ export default function AddedExercise({
           {`${exercise.sets} sets`}
         </p>
       </div>
-      <Button type='button' onClick={() => removeExercise(index)} variant='outline' size='sm'>
+      <Button type='button' onClick={() => removeExercise(exercise.id)} variant='outline' size='sm'>
         <X className='w-4 h-4' />
       </Button>
     </div>

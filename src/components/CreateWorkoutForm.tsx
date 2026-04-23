@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
 import { useConvexMutation } from '@convex-dev/react-query'
-import { Plus, Edit } from 'lucide-react'
+import { Plus, Edit, LoaderCircle } from 'lucide-react'
 import { z } from 'zod'
 import { api } from 'convex/_generated/api'
 import { Button } from '~/components/ui/button'
@@ -22,15 +22,17 @@ import {
 } from './ui/dialog'
 
 export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutFormProps) {
-  const { mutate: createWorkout } = useMutation({
+  const createWorkoutMutation = useMutation({
     mutationFn: useConvexMutation(api.workouts.addWorkout),
   })
-  const { mutate: updateWorkout } = useMutation({
+  const updateWorkoutMutation = useMutation({
     mutationFn: useConvexMutation(api.workouts.editWorkoutById),
   })
 
   const [exercises, setExercises] = useState<Exercise[]>(initialData?.exercises || [])
   const [isOpen, setIsOpen] = useState(false)
+  const [submitSuccessMessage, setSubmitSuccessMessage] = useState<string | null>(null)
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [exerciseFormErrors, setExerciseFormErrors] = useState<{
     exerciseTitle?: string[]
     weight?: string[]
@@ -40,6 +42,30 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
   }>({})
 
   const isEditMode = mode === 'edit'
+  const activeMutation = isEditMode ? updateWorkoutMutation : createWorkoutMutation
+  const isSubmitting = activeMutation.isPending
+  const fallbackErrorMessage = isEditMode
+    ? 'Unable to update workout. Please try again.'
+    : 'Unable to create workout. Please try again.'
+  const submitErrorMessage = activeMutation.isError
+    ? activeMutation.error instanceof Error
+      ? activeMutation.error.message
+      : fallbackErrorMessage
+    : null
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  function clearFeedbackState() {
+    createWorkoutMutation.reset()
+    updateWorkoutMutation.reset()
+    setSubmitSuccessMessage(null)
+  }
 
   // Helper function for field validation
   function validateField(schema: any, value: any) {
@@ -69,31 +95,46 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
         return undefined
       },
     },
-    onSubmit: ({ value }) => {
-      if (isEditMode && workoutId) {
-        updateWorkout({
-          id: workoutId,
-          updates: {
+    onSubmit: async ({ value }) => {
+      clearFeedbackState()
+
+      try {
+        if (isEditMode && workoutId) {
+          await updateWorkoutMutation.mutateAsync({
+            id: workoutId,
+            updates: {
+              title: value.title,
+              selectedDays: value.selectedDays,
+              weightUnit: value.weightUnit,
+              exercises,
+            },
+          })
+        } else {
+          await createWorkoutMutation.mutateAsync({
             title: value.title,
             selectedDays: value.selectedDays,
             weightUnit: value.weightUnit,
             exercises,
-          },
-        })
-      } else {
-        createWorkout({
-          title: value.title,
-          selectedDays: value.selectedDays,
-          weightUnit: value.weightUnit,
-          exercises,
-        })
-      }
+          })
+        }
 
-      // Reset form and exercises
-      form.reset()
-      setExercises(initialData?.exercises || [])
-      setExerciseFormErrors({})
-      setIsOpen(false)
+        // Reset form only after successful submit.
+        form.reset()
+        setExercises(initialData?.exercises || [])
+        setExerciseFormErrors({})
+        setSubmitSuccessMessage(
+          isEditMode ? 'Workout updated successfully.' : 'Workout created successfully.',
+        )
+
+        if (closeTimeoutRef.current) {
+          clearTimeout(closeTimeoutRef.current)
+        }
+        closeTimeoutRef.current = setTimeout(() => {
+          handleDialogOpenChange(false)
+        }, 900)
+      } catch {
+        // Error state is handled via TanStack mutation state.
+      }
     },
   })
 
@@ -126,6 +167,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
     setExerciseFormErrors({})
 
     const newExercise: Exercise = {
+      id: crypto.randomUUID(),
       exerciseTitle: exerciseValues.exerciseTitle,
       weight: parseFloat(exerciseValues.weight),
       startingWeight: parseFloat(exerciseValues.weight),
@@ -144,14 +186,20 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
     form.setFieldValue('sets', '')
   }
 
-  function removeExercise(index: number) {
-    setExercises(exercises.filter((_, i) => i !== index))
+  function removeExercise(exerciseId: string) {
+    setExercises(exercises.filter((exercise) => exercise.id !== exerciseId))
   }
 
   function handleDialogClose() {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current)
+      closeTimeoutRef.current = null
+    }
+
     form.reset()
     setExercises(initialData?.exercises || [])
     setExerciseFormErrors({})
+    clearFeedbackState()
   }
 
   function handleDialogOpenChange(open: boolean) {
@@ -496,8 +544,30 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
               ) : null
             }}
           />
-          <Button type='submit' disabled={exercises.length === 0} className='w-full mt-6'>
-            {isEditMode ? 'Update' : 'Create'} Workout ({exercises.length} exercise
+          {submitErrorMessage && (
+            <div className='mt-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md'>
+              {submitErrorMessage}
+            </div>
+          )}
+          {submitSuccessMessage && (
+            <div className='mt-4 p-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md'>
+              {submitSuccessMessage}
+            </div>
+          )}
+          <Button
+            type='submit'
+            disabled={exercises.length === 0 || isSubmitting}
+            className='w-full mt-6'
+          >
+            {isSubmitting && <LoaderCircle className='h-4 w-4 animate-spin' />}
+            {isSubmitting
+              ? isEditMode
+                ? 'Updating...'
+                : 'Creating...'
+              : isEditMode
+                ? 'Update'
+                : 'Create'}{' '}
+            Workout ({exercises.length} exercise
             {exercises.length !== 1 ? 's' : ''})
           </Button>
         </form>

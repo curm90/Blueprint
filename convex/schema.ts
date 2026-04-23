@@ -6,10 +6,6 @@ import { v } from 'convex/values'
 // app will continue to work.
 // The schema provides more precise TypeScript types.
 export default defineSchema({
-  numbers: defineTable({
-    value: v.number(),
-  }),
-
   workouts: defineTable({
     userId: v.string(),
     title: v.string(),
@@ -17,6 +13,7 @@ export default defineSchema({
     weightUnit: v.string(), // 'kg' or 'lbs'
     exercises: v.array(
       v.object({
+        id: v.string(),
         exerciseTitle: v.string(),
         startingWeight: v.number(),
         weight: v.number(),
@@ -33,6 +30,7 @@ export default defineSchema({
     completedAt: v.number(),
     exercises: v.array(
       v.object({
+        id: v.string(),
         exerciseTitle: v.string(),
         feedback: v.union(
           v.null(),

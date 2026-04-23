@@ -7,6 +7,7 @@ export const trackWorkout = mutation({
     workoutId: v.id('workouts'),
     results: v.array(
       v.object({
+        id: v.string(),
         exerciseTitle: v.string(),
         feedback: v.union(
           v.null(),
@@ -33,6 +34,7 @@ export const trackWorkout = mutation({
       workoutId,
       completedAt: Date.now(),
       exercises: results.map((result) => ({
+        id: result.id,
         exerciseTitle: result.exerciseTitle,
         feedback: result.feedback,
       })),
@@ -46,7 +48,7 @@ export const trackWorkout = mutation({
       .take(3)
 
     const updatedExercises = workout.exercises.map((exercise) => {
-      const result = results.find((r) => r.exerciseTitle === exercise.exerciseTitle)
+      const result = results.find((r) => r.id === exercise.id)
       if (!result) return exercise
 
       let newWeight = exercise.weight
@@ -58,7 +60,7 @@ export const trackWorkout = mutation({
       } else if (result.feedback === 'just-right') {
         // Check if last 3 completions (including this one) are all "just-right"
         const consecutiveJustRight = recentCompletions.every((completion) => {
-          const ex = completion.exercises.find((e) => e.exerciseTitle === exercise.exerciseTitle)
+          const ex = completion.exercises.find((e) => e.id === exercise.id)
           return ex?.feedback === 'just-right'
         })
 
