@@ -1,4 +1,4 @@
-import WorkoutCard from './WorkoutCard'
+import WorkoutCard from './WorkoutCard/WorkoutCard'
 
 export default function WorkoutCardList({
   todaysWorkouts,
@@ -11,7 +11,7 @@ export default function WorkoutCardList({
         const isCompleted = completedWorkoutIds.has(workout._id)
         const lastCompleted = stats?.lastCompletedByWorkout[workout._id]
 
-        const miniMetricData = [
+        const workoutMetricData = [
           {
             title: 'Total Sets',
             value: workout.exercises.reduce((sum, ex) => sum + (ex.sets ?? 0), 0),
@@ -32,7 +32,7 @@ export default function WorkoutCardList({
             workout={workout}
             isCompleted={isCompleted}
             lastCompleted={lastCompleted}
-            miniMetricData={miniMetricData}
+            workoutMetricData={workoutMetricData}
           />
         )
       })}

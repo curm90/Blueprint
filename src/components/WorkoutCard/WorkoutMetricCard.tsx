@@ -1,4 +1,4 @@
-export default function MiniMetricCard({ title, value }: MiniMetricData) {
+export default function WorkoutMetricCard({ title, value }: WorkoutMetrics) {
   return (
     <div className='flex flex-col gap-0.5 rounded-lg bg-muted/50 px-3 py-2'>
       <span className='text-[11px] font-medium text-muted-foreground uppercase tracking-wider'>
