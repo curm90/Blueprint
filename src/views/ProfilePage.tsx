@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { CheckCircle, AlertCircle, Send } from 'lucide-react'
 import { convexQuery } from '@convex-dev/react-query'
@@ -21,7 +21,14 @@ export default function ProfilePage() {
   const [verificationSent, setVerificationSent] = useState(false)
   const [sending, setSending] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [name, setName] = useState(user?.name || '')
+  const [name, setName] = useState('')
+  const [isNameDirty, setIsNameDirty] = useState(false)
+
+  useEffect(() => {
+    if (!isNameDirty) {
+      setName(user?.name ?? '')
+    }
+  }, [user?.name, isNameDirty])
 
   const isVerified = user?.emailVerified
 
@@ -47,6 +54,7 @@ export default function ProfilePage() {
         updates.image = null
       }
       await authClient.updateUser(updates)
+      setIsNameDirty(false)
     } finally {
       setSaving(false)
     }
@@ -81,7 +89,14 @@ export default function ProfilePage() {
 
               <Label className='text-muted-foreground flex flex-col gap-2 justify-start items-start'>
                 Name
-                <Input placeholder='' value={name} onChange={(e) => setName(e.target.value)} />
+                <Input
+                  placeholder=''
+                  value={name}
+                  onChange={(e) => {
+                    setIsNameDirty(true)
+                    setName(e.target.value)
+                  }}
+                />
               </Label>
             </div>
           </CardContent>
