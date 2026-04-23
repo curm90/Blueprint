@@ -6,8 +6,9 @@ import { Card, CardContent } from '~/components/ui/card'
 import EmptyUI from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'
 import StatsCardsList from '~/components/StatsCardsList'
-import WorkoutCardList from '~/components/WorkoutCardList'
+import WorkoutCardList from '~/components/WorkoutCard/WorkoutCardList'
 import RestDayCard from '~/components/RestDayCard'
+import { buildWorkoutCardModels } from '~/lib/workout-card-models'
 
 export default function Homepage() {
   const { data: allWorkouts } = useSuspenseQuery(convexQuery(api.workouts.listWorkouts, {}))
@@ -25,6 +26,7 @@ export default function Homepage() {
   )
 
   const completedWorkoutIds = new Set(todaysCompletions?.map((c) => c.workoutId) ?? [])
+  const workoutCards = buildWorkoutCardModels(todaysWorkouts ?? [], stats, completedWorkoutIds)
 
   const todayDate = new Date().toLocaleDateString(undefined, {
     month: 'long',
@@ -45,11 +47,7 @@ export default function Homepage() {
 
       {/* Workout cards */}
       {todaysWorkouts && todaysWorkouts.length > 0 ? (
-        <WorkoutCardList
-          todaysWorkouts={todaysWorkouts}
-          completedWorkoutIds={completedWorkoutIds}
-          stats={stats}
-        />
+        <WorkoutCardList workoutCards={workoutCards} />
       ) : allWorkouts && allWorkouts.length === 0 ? (
         <Card className='bg-secondary'>
           <CardContent>

@@ -1,7 +1,7 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { api } from 'convex/_generated/api'
-import Profile from '~/views/Profile'
+import ProfilePage from '~/views/ProfilePage'
 
 export const Route = createFileRoute('/profile')({
   loader: async ({ context }) => {
@@ -11,5 +11,5 @@ export const Route = createFileRoute('/profile')({
 })
 
 function RouteComponent() {
-  return <Profile />
+  return <ProfilePage />
 }

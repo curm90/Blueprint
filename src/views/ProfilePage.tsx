@@ -13,7 +13,7 @@ import ProfileImage from '../components/ProfileImage'
 import ChangePasswordForm from '../components/ChangePasswordForm'
 import SignOutDialog from '../components/SignOutDialog'
 
-export default function Profile() {
+export default function ProfilePage() {
   const { data: user } = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
 
   const [imagePreview, setImagePreview] = useState<string | null>(null)
