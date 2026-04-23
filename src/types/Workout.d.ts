@@ -13,13 +13,13 @@ type TrackedWorkout = {
   workout: WorkoutWithId
 }
 
-type WorkoutWithId = WorkoutData & { _id: WorkoutId }
+type WorkoutCardVariant = 'track' | 'manage'
 
 type WorkoutCardProps = {
   workout: WorkoutWithId
   isCompleted: boolean
   lastCompleted: number | null
-  miniMetricData: MiniMetricData[]
+  workoutMetricData: WorkoutMetrics[]
 }
 
 type WorkoutCardListProps = {

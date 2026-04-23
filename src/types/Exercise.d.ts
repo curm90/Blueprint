@@ -8,7 +8,7 @@ type Exercise = {
   sets: number
 }
 
-type ExerciseListItemProps = {
+type WorkoutExerciseListItemProps = {
   title: string
   weight: number
   weightUnit: string
@@ -51,7 +51,7 @@ type TrackWorkoutFormProps = {
   }
 }
 
-type MiniMetricData = {
+type WorkoutMetrics = {
   title: string
   value: number
 }

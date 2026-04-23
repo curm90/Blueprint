@@ -20,11 +20,18 @@ type ManageVariant = WorkoutCardHeaderBase & {
 
 type WorkoutCardHeaderProps = TrackVariant | ManageVariant
 
-type ManageOptionsProps = {
+type WorkoutCardHeaderOptions = {
   workoutId: WorkoutId
   title: string
   weightUnit: string
   isExpanded: boolean
   selectedDays: string[]
   exercises: Exercise[]
+}
+
+type WorkoutCardFooterProps = {
+  lastCompleted: number | null
+  completionCount: number
+  totalWeightProgress: number
+  weightUnit: string
 }
