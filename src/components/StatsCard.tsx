@@ -2,7 +2,7 @@ import { Card, CardContent } from './ui/card'
 
 export default function StatsCard({ label, value, suffix, icon, color, bg }: StatsCardProps) {
   return (
-    <Card key={label} size='sm'>
+    <Card size='sm'>
       <CardContent className='flex flex-col gap-1'>
         <div className='flex items-center gap-2'>
           <div className={`rounded-md p-1.5 ${bg}`}>
