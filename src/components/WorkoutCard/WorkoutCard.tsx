@@ -1,50 +1,63 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { convexQuery } from '@convex-dev/react-query'
-import { api } from 'convex/_generated/api'
 import { Card, CardContent } from '../ui/card'
 import { Separator } from '../ui/separator'
 import TrackWorkoutForm from '../TrackWorkoutForm'
 import WorkoutCardHeader from './WorkoutCardHeader'
+import WorkoutSchedulePills from './WorkoutSchedulePills'
 import WorkoutExerciseList from './WorkoutExerciseList'
 import WorkoutMetricsCardList from './WorkoutMetricsCardList'
 import WorkoutCardFooter from './WorkoutCardFooter'
 
-export default function WorkoutCard({
-  workout,
-  isCompleted,
-  lastCompleted,
-  workoutMetricData,
-}: WorkoutCardProps) {
-  const { data: stats } = useSuspenseQuery(convexQuery(api.workoutCompletions.getWorkoutStats, {}))
-
-  const completionCount = stats?.completionsByWorkout[workout._id as string] ?? 0
-  const totalWeightProgress = workout.exercises.reduce(
-    (sum, ex) => sum + (ex.weight - ex.startingWeight),
-    0,
-  )
+export default function WorkoutCard(props: WorkoutCardProps) {
+  const { variant, model } = props
+  const { workout } = model
+  const showDetails = variant === 'track' || props.isExpanded
 
   return (
-    <Card className={`transition-all ${isCompleted ? 'opacity-60 ring-emerald-500/30' : ''}`}>
-      <WorkoutCardHeader
-        variant='track'
-        isCompleted={isCompleted}
-        title={workout.title}
-        exerciseCount={workout.exercises.length}
-        weightUnit={workout.weightUnit}
-      />
+    <Card
+      className={`transition-all ${variant === 'track' && model.isCompleted ? 'opacity-60 ring-emerald-500/30' : ''}`}
+    >
+      {variant === 'track' ? (
+        <WorkoutCardHeader
+          variant='track'
+          isCompleted={model.isCompleted}
+          title={workout.title}
+          exerciseCount={workout.exercises.length}
+          weightUnit={workout.weightUnit}
+        />
+      ) : (
+        <WorkoutCardHeader
+          variant='manage'
+          workoutId={workout._id}
+          isExpanded={props.isExpanded}
+          onToggleExpand={props.onToggleExpand}
+          title={workout.title}
+          exerciseCount={workout.exercises.length}
+          weightUnit={workout.weightUnit}
+          selectedDays={workout.selectedDays}
+          exercises={workout.exercises}
+        />
+      )}
 
-      <Separator />
+      {showDetails && (
+        <>
+          <Separator />
 
-      <CardContent className='flex flex-col gap-4'>
-        <WorkoutMetricsCardList data={workoutMetricData} />
-        <WorkoutExerciseList workout={workout} />
-        {!isCompleted && <TrackWorkoutForm workout={workout} />}
-      </CardContent>
+          <CardContent className='flex flex-col gap-4'>
+            {variant === 'track' ? (
+              <WorkoutMetricsCardList data={model.workoutMetricData} />
+            ) : (
+              <WorkoutSchedulePills selectedDays={workout.selectedDays} />
+            )}
+            <WorkoutExerciseList workout={workout} />
+            {variant === 'track' && !model.isCompleted && <TrackWorkoutForm workout={workout} />}
+          </CardContent>
+        </>
+      )}
 
       <WorkoutCardFooter
-        lastCompleted={lastCompleted}
-        completionCount={completionCount}
-        totalWeightProgress={totalWeightProgress}
+        lastCompleted={model.lastCompleted}
+        completionCount={model.completionCount}
+        totalWeightProgress={model.totalWeightProgress}
         weightUnit={workout.weightUnit}
       />
     </Card>
