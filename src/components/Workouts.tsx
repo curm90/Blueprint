@@ -6,11 +6,11 @@ import { api } from 'convex/_generated/api'
 import { CreateWorkoutForm } from './CreateWorkoutForm'
 import EmptyUI from './EmptyUI'
 import PageTitle from './PageTitle'
-import ExerciseListItem from './ExerciseListItem'
 import { Card, CardContent, CardFooter } from './ui/card'
 import { Separator } from './ui/separator'
 import { DAYS_OF_WEEK } from '~/lib/constants'
 import WorkoutCardHeader from './WorkoutCard/WorkoutCardHeader'
+import WorkoutExerciseList from './WorkoutCard/WorkoutExerciseList'
 
 export default function Workouts() {
   const { data: workouts } = useSuspenseQuery(convexQuery(api.workouts.listWorkouts, {}))
@@ -86,20 +86,7 @@ export default function Workouts() {
                         ))}
                       </div>
 
-                      {/* Exercise list */}
-                      <ul className='flex flex-col gap-2'>
-                        {workout.exercises.map((exercise) => (
-                          <ExerciseListItem
-                            key={exercise.id}
-                            title={exercise.exerciseTitle}
-                            weight={exercise.weight}
-                            weightUnit={workout.weightUnit}
-                            sets={exercise.sets}
-                            minReps={exercise.minReps}
-                            maxReps={exercise.maxReps}
-                          />
-                        ))}
-                      </ul>
+                      <WorkoutExerciseList workout={workout} />
                     </CardContent>
                   </>
                 )}
@@ -126,7 +113,7 @@ export default function Workouts() {
                   </div>
                   {lastCompleted && (
                     <span className='text-xs text-muted-foreground'>
-                      Last:{' '}
+                      Last completed:{' '}
                       {new Date(lastCompleted).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',

@@ -1,7 +1,7 @@
 import { CardHeader } from '../ui/card'
 import { Dumbbell } from 'lucide-react'
-import DoneBadge from './DoneBadge'
-import ManageOptions from './ManageOptions'
+import DoneBadge from '../DoneBadge'
+import ManageOptions from './WorkoutCardHeaderOptions'
 
 export default function WorkoutCardHeader(props: WorkoutCardHeaderProps) {
   const { title, exerciseCount, weightUnit, variant } = props
