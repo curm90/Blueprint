@@ -1,7 +1,7 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { api } from 'convex/_generated/api'
-import Homepage from '~/views/Homepage'
+import HomePage from '~/views/Homepage'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -22,5 +22,5 @@ export const Route = createFileRoute('/')({
 })
 
 function Home() {
-  return <Homepage />
+  return <HomePage />
 }

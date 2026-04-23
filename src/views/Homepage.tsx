@@ -10,7 +10,7 @@ import WorkoutCardList from '~/components/WorkoutCard/WorkoutCardList'
 import RestDayCard from '~/components/RestDayCard'
 import { buildWorkoutCardModels } from '~/lib/workout-card-models'
 
-export default function Homepage() {
+export default function HomePage() {
   const { data: allWorkouts } = useSuspenseQuery(convexQuery(api.workouts.listWorkouts, {}))
   const { data: stats } = useSuspenseQuery(convexQuery(api.workoutCompletions.getWorkoutStats, {}))
 
