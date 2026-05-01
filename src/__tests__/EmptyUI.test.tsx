@@ -19,9 +19,9 @@ describe('EmptyUI', () => {
   it('renders the title and description passed as props', () => {
     render(<EmptyUI title='Test Title' description='Test Description' />, { wrapper })
 
-    screen.debug
+    screen.debug()
 
-    // expect(screen.getByText('Test Title')).toBeInTheDocument()
-    // expect(screen.getByText('Test Description')).toBeInTheDocument()
+    expect(screen.getByText('Test Title')).toBeInTheDocument()
+    expect(screen.getByText('Test Description')).toBeInTheDocument()
   })
 })
