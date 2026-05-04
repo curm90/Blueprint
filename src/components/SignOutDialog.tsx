@@ -8,13 +8,17 @@ export default function SignOutDialog() {
   const [isOpen, setIsOpen] = useState(false)
 
   const handleSignOut = async () => {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          location.reload()
+    try {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            location.reload()
+          },
         },
-      },
-    })
+      })
+    } catch {
+      // sign-out failed — stay on the page
+    }
   }
 
   return (

@@ -59,4 +59,64 @@ describe('SignOutDialog', () => {
       },
     })
   })
+
+  it('should reload the page when sign out succeeds', async () => {
+    const reloadFn = vi.fn()
+    vi.stubGlobal('location', { ...window.location, reload: reloadFn })
+
+    mockSignOut.mockImplementation(async (args: any) => {
+      args.fetchOptions.onSuccess()
+    })
+
+    render(<SignOutDialog />)
+
+    fireEvent.click(screen.getByRole('button', { name: /sign out/i }))
+
+    const dialog = screen.getByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: /^sign out$/i }))
+
+    await vi.waitFor(() => expect(reloadFn).toHaveBeenCalledTimes(1))
+
+    vi.unstubAllGlobals()
+  })
+
+  it('should not reload the page before the sign out succeeds', async () => {
+    const reloadFn = vi.fn()
+    vi.stubGlobal('location', { ...window.location, reload: reloadFn })
+
+    mockSignOut.mockResolvedValue(undefined)
+
+    render(<SignOutDialog />)
+
+    fireEvent.click(screen.getByRole('button', { name: /sign out/i }))
+
+    const dialog = screen.getByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: /^sign out$/i }))
+
+    await vi.waitFor(() => expect(mockSignOut).toHaveBeenCalled())
+
+    expect(reloadFn).not.toHaveBeenCalled()
+
+    vi.unstubAllGlobals()
+  })
+
+  it('should not reload the page when sign out fails', async () => {
+    const reloadFn = vi.fn()
+    vi.stubGlobal('location', { ...window.location, reload: reloadFn })
+
+    mockSignOut.mockRejectedValue(new Error('Sign out failed'))
+
+    render(<SignOutDialog />)
+
+    fireEvent.click(screen.getByRole('button', { name: /sign out/i }))
+
+    const dialog = screen.getByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: /^sign out$/i }))
+
+    await vi.waitFor(() => expect(mockSignOut).toHaveBeenCalled())
+
+    expect(reloadFn).not.toHaveBeenCalled()
+
+    vi.unstubAllGlobals()
+  })
 })
