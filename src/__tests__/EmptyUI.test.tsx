@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react'
-// import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import EmptyUI from '~/components/EmptyUI'
 
 // CreateWorkoutForm depends on Convex — mock it here since we're testing EmptyUI, not the form
@@ -10,13 +9,6 @@ vi.mock('~/components/CreateWorkoutForm', () => ({
 vi.mock('lucide-react', () => ({
   Dumbbell: () => <div data-testid='dumbbell-icon'>Dumbbell Icon</div>,
 }))
-
-// function wrapper({ children }: { children: React.ReactNode }) {
-//   const queryClient = new QueryClient({
-//     defaultOptions: { queries: { retry: false } },
-//   })
-//   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-// }
 
 describe('EmptyUI', () => {
   it('renders the title and description passed as props', () => {
