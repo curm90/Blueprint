@@ -81,7 +81,6 @@ describe('DeleteWorkoutDialog', () => {
     const triggerButton = screen.getByRole('button')
     fireEvent.click(triggerButton)
 
-    screen.debug()
     const deleteButton = screen.getByRole('button', { name: /deleting\.\.\./i })
     expect(deleteButton).toBeInTheDocument()
   })
