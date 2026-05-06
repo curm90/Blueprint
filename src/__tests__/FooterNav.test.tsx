@@ -27,9 +27,9 @@ describe('FooterNav', () => {
     const nav = screen.getByRole('navigation')
     const links = within(nav).getAllByRole('listitem')
 
-    expect(links[0]).toHaveTextContent(/home/i)
+    expect(links[0]).toHaveTextContent(/today/i)
     expect(links[1]).toHaveTextContent(/workouts/i)
-    expect(links[2]).toHaveTextContent(/stats/i)
-    expect(links[3]).toHaveTextContent(/settings/i)
+    expect(links[2]).toHaveTextContent(/progress/i)
+    expect(links[3]).toHaveTextContent(/profile/i)
   })
 })
