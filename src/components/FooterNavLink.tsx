@@ -14,7 +14,7 @@ export default function FooterNavLink({ icon: Icon, label, to }: FooterNavLinkPr
       activeProps={{ className: 'text-sidebar-primary' }}
       className='flex flex-col items-center gap-1 text-sm'
     >
-      <Icon className='w-4 h-4' />
+      <Icon className='w-4 h-4' data-testid={`${label.toLowerCase()}-icon`} />
       <span>{label}</span>
     </Link>
   )
