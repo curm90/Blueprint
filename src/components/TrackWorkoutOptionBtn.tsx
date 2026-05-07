@@ -21,7 +21,7 @@ export default function TrackWorkoutOptionBtn({
         isSelected ? buttonClassName : 'hover:bg-muted',
       )}
     >
-      <Icon className={cn('size-4 shrink-0', iconColor)} />
+      <Icon data-testid='icon' className={cn('size-4 shrink-0', iconColor)} />
       <div>
         <span className='font-medium'>{title}</span>
         <p className='text-xs text-muted-foreground'>{description}</p>
