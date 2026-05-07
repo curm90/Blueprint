@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createColumnHelper, type ColumnDef } from '@tanstack/react-table'
 import { convexQuery } from '@convex-dev/react-query'
-import { ArrowUpDown, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, TrendingDown, TrendingUp } from 'lucide-react'
 import { api } from 'convex/_generated/api'
 import PageTitle from '~/components/PageTitle'
 import ProgressTable from '~/components/ProgressTable'
@@ -9,12 +9,22 @@ import { Button } from '~/components/ui/button'
 
 const columnHelper = createColumnHelper<ExerciseProgress>()
 
+function SortIcon({ sorted }: { sorted: false | 'asc' | 'desc' }) {
+  if (sorted === 'asc') {
+    return <ArrowUp className='h-4 w-4' aria-label='sorted ascending' />
+  }
+  if (sorted === 'desc') {
+    return <ArrowDown className='h-4 w-4' aria-label='sorted descending' />
+  }
+  return <ArrowUpDown className='h-4 w-4' aria-label='not sorted' />
+}
+
 const columns: ColumnDef<ExerciseProgress, any>[] = [
   columnHelper.accessor('exerciseTitle', {
     header: ({ column }) => (
       <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
         Exercise
-        <ArrowUpDown className='h-4 w-4' />
+        <SortIcon sorted={column.getIsSorted()} />
       </Button>
     ),
     cell: (info) => <span className='font-medium'>{info.getValue()}</span>,
@@ -23,7 +33,7 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
     header: ({ column }) => (
       <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
         Workout
-        <ArrowUpDown className='h-4 w-4' />
+        <SortIcon sorted={column.getIsSorted()} />
       </Button>
     ),
     cell: (info) => <span className='text-muted-foreground'>{info.getValue()}</span>,
@@ -32,7 +42,7 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
     header: ({ column }) => (
       <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
         Start
-        <ArrowUpDown className='h-4 w-4' />
+        <SortIcon sorted={column.getIsSorted()} />
       </Button>
     ),
     cell: (info) => (
@@ -45,7 +55,7 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
     header: ({ column }) => (
       <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
         Current
-        <ArrowUpDown className='h-4 w-4' />
+        <SortIcon sorted={column.getIsSorted()} />
       </Button>
     ),
     cell: (info) => (
@@ -58,7 +68,7 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
     header: ({ column }) => (
       <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
         Change
-        <ArrowUpDown className='h-4 w-4' />
+        <SortIcon sorted={column.getIsSorted()} />
       </Button>
     ),
     cell: (info) => {
@@ -86,7 +96,7 @@ const columns: ColumnDef<ExerciseProgress, any>[] = [
     header: ({ column }) => (
       <Button variant='ghost' onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
         %
-        <ArrowUpDown className='h-4 w-4' />
+        <SortIcon sorted={column.getIsSorted()} />
       </Button>
     ),
     cell: (info) => {
