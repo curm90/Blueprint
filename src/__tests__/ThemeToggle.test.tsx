@@ -2,6 +2,12 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ThemeToggle from '~/components/ThemeToggle'
 
+const mockSetTheme = vi.hoisted(() => vi.fn())
+
+vi.mock(import('~/components/ThemeProvider'), () => ({
+  useTheme: () => ({ setTheme: mockSetTheme, theme: 'system' }),
+}))
+
 describe('ThemeToggle', () => {
   it('should render the theme toggle button', () => {
     render(<ThemeToggle />)
@@ -24,5 +30,18 @@ describe('ThemeToggle', () => {
     expect(screen.getByRole('menuitem', { name: /light/i })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: /dark/i })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: /system/i })).toBeInTheDocument()
+  })
+
+  it('should call setTheme with "light" when the Light menu item is clicked', async () => {
+    const user = userEvent.setup()
+    render(<ThemeToggle />)
+
+    const dropdownTriggerBtn = screen.getByRole('button', { name: /theme/i })
+    await user.click(dropdownTriggerBtn)
+
+    const lightMenuItem = screen.getByRole('menuitem', { name: /light/i })
+    await user.click(lightMenuItem)
+
+    expect(mockSetTheme).toHaveBeenCalledWith('light')
   })
 })
