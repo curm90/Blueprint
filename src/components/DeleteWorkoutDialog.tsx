@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Trash } from 'lucide-react'
 import { useConvexMutation } from '@convex-dev/react-query'
-import { api } from 'convex/_generated/api'
+import { api } from '../../convex/_generated/api'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from './ui/dialog'
 import { Button } from './ui/button'
 

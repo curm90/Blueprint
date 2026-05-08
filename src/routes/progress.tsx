@@ -1,6 +1,6 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { api } from 'convex/_generated/api'
+import { api } from '../../convex/_generated/api'
 import ProgressPage from '~/views/ProgressPage'
 
 export const Route = createFileRoute('/progress')({

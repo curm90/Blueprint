@@ -1,6 +1,6 @@
 import { convexQuery } from '@convex-dev/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { api } from 'convex/_generated/api'
+import { api } from '../../convex/_generated/api'
 import ProfilePage from '~/views/ProfilePage'
 
 export const Route = createFileRoute('/profile')({

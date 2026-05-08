@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { ChevronRight, LoaderCircle } from 'lucide-react'
 import { useConvexMutation } from '@convex-dev/react-query'
 import { toast } from 'sonner'
-import { api } from 'convex/_generated/api'
+import { api } from '../../convex/_generated/api'
 import options from './TrackWorkoutOptionData'
 import { Button } from './ui/button'
 import {
