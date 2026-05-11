@@ -83,6 +83,7 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
             </div>
             <div className='h-2 w-full rounded-full bg-muted'>
               <div
+                data-testid='progress-bar'
                 className='h-full rounded-full bg-primary transition-all duration-300'
                 style={{ width: `${progressPercent}%` }}
               />
