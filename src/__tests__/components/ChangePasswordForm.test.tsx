@@ -54,7 +54,7 @@ describe('ChangePasswordForm', () => {
     const dialog = screen.getByRole('dialog')
     expect(dialog).toBeInTheDocument()
 
-    const closeBtn = screen.getByRole('button', { name: /close/i })
+    const closeBtn = screen.getByRole('button', { name: /cancel/i })
     await user.click(closeBtn)
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
