@@ -168,7 +168,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
 
     const newExercise: Exercise = {
       id: crypto.randomUUID(),
-      exerciseTitle: exerciseValues.exerciseTitle,
+      exerciseTitle: exerciseValues.exerciseTitle.replace(/\b\w/g, (char) => char.toUpperCase()),
       weight: parseFloat(exerciseValues.weight),
       startingWeight: parseFloat(exerciseValues.weight),
       minReps: parseInt(exerciseValues.minReps),
