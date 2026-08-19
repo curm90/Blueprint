@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { ChevronRight, LoaderCircle } from 'lucide-react'
 import { useConvexMutation } from '@convex-dev/react-query'
 import { toast } from 'sonner'
-import { api } from 'convex/_generated/api'
+import { api } from '../../convex/_generated/api'
 import options from './TrackWorkoutOptionData'
 import { Button } from './ui/button'
 import {
@@ -83,6 +83,7 @@ export default function TrackWorkoutForm({ workout }: TrackWorkoutFormProps) {
             </div>
             <div className='h-2 w-full rounded-full bg-muted'>
               <div
+                data-testid='progress-bar'
                 className='h-full rounded-full bg-primary transition-all duration-300'
                 style={{ width: `${progressPercent}%` }}
               />

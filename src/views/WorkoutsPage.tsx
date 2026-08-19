@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { convexQuery } from '@convex-dev/react-query'
-import { api } from 'convex/_generated/api'
+import { api } from '../../convex/_generated/api'
 import { CreateWorkoutForm } from '~/components/CreateWorkoutForm'
 import EmptyUI from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'

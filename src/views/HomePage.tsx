@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Folder } from 'lucide-react'
 import { convexQuery } from '@convex-dev/react-query'
-import { api } from 'convex/_generated/api'
+import { api } from '../../convex/_generated/api'
 import { Card, CardContent } from '~/components/ui/card'
 import EmptyUI from '~/components/EmptyUI'
 import PageTitle from '~/components/PageTitle'

@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { Image } from '@unpic/react'
 import { useQuery } from '@tanstack/react-query'
 import { convexQuery } from '@convex-dev/react-query'
-import { api } from 'convex/_generated/api'
+import { api } from '../../convex/_generated/api'
 import ThemeToggle from '~/components/ThemeToggle'
 import { Separator } from '~/components/ui/separator'
 import { LINKS, DEFAULT_AVATAR } from '~/lib/constants'
@@ -14,7 +14,7 @@ export default function Header() {
     <header>
       <nav className='flex justify-between px-4 sm:px-8 py-4 border border-bottom'>
         <Link to='/' className='flex items-center gap-2'>
-          <Image src='logo.png' width={32} height={32} className='dark:invert' />
+          <Image src='logo.png' width={32} height={32} className='dark:invert' alt='logo' />
           <h4 className='text-foreground'>Blueprint</h4>
         </Link>
         <div className='flex items-center gap-4'>

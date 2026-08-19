@@ -153,8 +153,18 @@ export default function ChangePasswordForm() {
           {submitError && <p className='mt-4 text-sm text-destructive'>{submitError}</p>}
           <DialogFooter className='mt-6'>
             <Field orientation='horizontal'>
-              <Button type='button' variant='outline' onClick={() => form.reset()}>
+              {/* <Button type='button' variant='outline' onClick={() => form.reset()}>
                 Reset
+              </Button> */}
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => {
+                  form.reset()
+                  setOpen(false)
+                }}
+              >
+                Cancel
               </Button>
               <Button type='submit'>Submit</Button>
             </Field>

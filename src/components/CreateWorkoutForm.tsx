@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useConvexMutation } from '@convex-dev/react-query'
 import { Plus, Edit, LoaderCircle } from 'lucide-react'
 import { z } from 'zod'
-import { api } from 'convex/_generated/api'
+import { api } from '../../convex/_generated/api'
 import { Button } from '~/components/ui/button'
 import { Field, FieldError, FieldLabel } from '~/components/ui/field'
 import { Input } from '~/components/ui/input'
@@ -168,7 +168,7 @@ export function WorkoutForm({ mode, workoutId, initialData, children }: WorkoutF
 
     const newExercise: Exercise = {
       id: crypto.randomUUID(),
-      exerciseTitle: exerciseValues.exerciseTitle,
+      exerciseTitle: exerciseValues.exerciseTitle.replace(/\b\w/g, (char) => char.toUpperCase()),
       weight: parseFloat(exerciseValues.weight),
       startingWeight: parseFloat(exerciseValues.weight),
       minReps: parseInt(exerciseValues.minReps),
